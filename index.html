@@ -15,1253 +15,9 @@
     <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
-    <style>
-        /* --- Variáveis de Tema --- */
-        :root {
-            /* Cores de Acento e Ação (Tema Claro) */
-            --accent-primary: #ac009e;   /* Magenta (Nova paleta) */
-            --accent-secondary: #fd24a0; /* Pink (Nova paleta) */
-            
-            /* Cores Semânticas */
-            --success-color: #70e000;    /* Verde (Nova paleta) */
-            --warning-color: #f88f0b;    /* Laranja (Nova paleta) */
-            --danger-color: #ef476f;     /* Vermelho (Mantido) */
-            --info-color: #00d5ff;       /* Ciano (Nova paleta) */
-
-            /* Paleta de Cores Adicional (para gráficos, etc.) */
-            --brand-magenta: #ccff33;
-            --brand-pink: #fd24a0;
-            --brand-lime: #ccff33;
-            --brand-green: #70e000;
-            --brand-cyan: #00d5ff;
-            --brand-orange: #f88f0b;
-            --brand-dark-blue: #010d32;
-            --brand-snow-white: #fffafa;
-            
-            /* Tema Claro (Padrão) - Melhorado */
-            --bg-primary: #f8fafc;        /* Fundo principal - azul-cinza muito claro */
-            --bg-secondary: #ffffff;      /* Fundo de cards, modais (branco puro) */
-            --bg-tertiary: #f1f5f9;       /* Fundo de elementos aninhados - azul-cinza claro */
-            
-            --text-primary: #1e293b;      /* Texto principal - azul-cinza escuro moderno */
-            --text-secondary: #64748b;    /* Texto secundário - cinza-azul médio */
-            --text-accent: var(--accent-primary);
-            --text-on-accent: #ffffff;    /* Texto sobre fundos de acento */
-            
-            --border-primary: #e2e8f0;      /* Bordas principais - azul-cinza suave */
-            --border-secondary: #cbd5e1;    /* Bordas de inputs - azul-cinza médio */
-            --border-accent: var(--accent-primary);
-            
-            /* Estados de hover e foco - Light Mode */
-            --hover-overlay: rgba(148, 163, 184, 0.05);
-            --focus-ring: rgba(172, 0, 158, 0.15);
-
-            /* Sombras - Melhoradas */
-            --shadow-color-rgb: 30, 41, 59;
-            --shadow-sm: 0 1px 3px rgba(var(--shadow-color-rgb), 0.05);
-            --shadow-md: 0 2px 8px rgba(var(--shadow-color-rgb), 0.08);
-            --shadow-lg: 0 4px 16px rgba(var(--shadow-color-rgb), 0.12);
-
-            /* Outras variáveis de layout */
-            --border-radius: 10px;
-            --border-radius-lg: 16px;
-            --transition-fast: 0.13s cubic-bezier(0.4,0,0.2,1);
-            --transition-normal: 0.22s cubic-bezier(0.4,0,0.2,1);
-            --transition-slow: 0.33s cubic-bezier(0.4,0,0.2,1);
-            --spacing-xs: 0.375rem;
-            --spacing-sm: 0.75rem;
-            --spacing-md: 1.25rem;
-            --spacing-lg: 2rem;
-            --spacing-xl: 2.5rem;
-
-            /* Adicionado para usar em rgba() */
-            --brand-cyan-rgb: 0, 213, 255;
-            --success-color-rgb: 112, 224, 0;
-            --warning-color-rgb: 248, 143, 11;
-            --accent-secondary-rgb: 253, 36, 160;
-            --brand-magenta-rgb: 172, 0, 158;
-            --brand-green-rgb: 112, 224, 0;
-            --brand-orange-rgb: 248, 143, 11;
-        }
-
-        /* Tema Escuro - Para modo dark */
-        body.dark {
-            /* Cores de Acento e Ação */
-            --accent-primary: #fd24a0;   /* Pink (Nova paleta) */
-            --accent-secondary: #ac009e; /* Magenta (Nova paleta) */
-
-            /* Tema Escuro */
-            --bg-primary: #010d32;      /* Fundo principal (Novo azul da marca) */
-            --bg-secondary: #0b1a4c;    /* Fundo de cards (tom mais claro do novo azul) */
-            --bg-tertiary: #11225a;     /* Fundo de elementos aninhados, hovers */
-            
-            --text-primary: #fffafa;     /* Texto principal (Novo branco 'snow') */
-            --text-secondary: #a3aed0;   /* Mantido para bom contraste */
-            
-            --border-primary: rgba(255, 255, 255, 0.1);
-            --border-secondary: rgba(255, 255, 255, 0.18);
-            
-            /* Sombras */
-            --shadow-color-rgb: 0, 0, 0;
-            --shadow-sm: 0 1px 4px rgba(var(--shadow-color-rgb), 0.18);
-            --shadow-md: 0 3px 10px rgba(var(--shadow-color-rgb), 0.22);
-            --shadow-lg: 0 6px 20px rgba(var(--shadow-color-rgb), 0.25);
-        }
-
-        /* Estilos globais */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-
-        /* Classe utilitária para ocultar elementos */
-        .hidden {
-            display: none !important;
-        }
-
-        body {
-            background-color: var(--bg-primary) !important;
-            color: var(--text-primary) !important;
-            min-height: 100vh;
-            font-family: 'Inter', 'Segoe UI', 'Roboto', 'Arial', sans-serif;
-            font-size: 1.05rem;
-            line-height: 1.7;
-            letter-spacing: 0.01em;
-            transition: background-color var(--transition-normal), color var(--transition-normal);
-            overflow-x: hidden;
-        }
-
-        /* --- Layout Geral --- */
-        .app-container {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            background: var(--bg-primary);
-        }
-
-        /* === HEADER GLOBAL === */
-        .global-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 80px;
-            background: var(--bg-primary);
-            border-bottom: 1px solid var(--border-primary);
-            display: flex;
-            align-items: center;
-            padding: 0 1.5rem;
-            gap: 1.5rem;
-            z-index: 1000;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-md);
-        }
-
-        .logo-brand {
-            display: flex;
-            align-items: center;
-        }
-
-        .logo-text {
-            font-size: 1.8rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .header-main {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-md);
-        }
-
-        .header-title {
-            font-size: 1.9rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin: 0;
-            line-height: 1.2;
-        }
-
-        .header-center {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-        }
-
-        .filters-container {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-md);
-            background: var(--bg-secondary);
-            padding: var(--spacing-sm) var(--spacing-md);
-            border-radius: var(--border-radius);
-            border: 1px solid var(--border-primary);
-        }
-
-        .filter-label {
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        /* === LAYOUT PRINCIPAL === */
-        .main-layout {
-            display: flex;
-            height: calc(100vh - 80px);
-            margin-top: 80px;
-        }
-
-        /* --- Sidebar --- */
-        .sidebar {
-            width: 280px;
-            background-color: var(--bg-secondary);
-            border-right: 1px solid var(--border-primary);
-            box-shadow: var(--shadow-sm);
-            display: flex;
-            flex-direction: column;
-            transition: width var(--transition-normal), background-color var(--transition-normal);
-            flex-shrink: 0;
-            z-index: 40;
-        }
-
-        .sidebar.collapsed {
-            width: 72px;
-        }
-
-        /* Menu de Navegação */
-        .sidebar-nav {
-            flex: 1;
-            padding: var(--spacing-lg) 0;
-            overflow-y: auto;
-            position: relative;
-        }
-
-        /* Indicador visual sutil para áreas clicáveis */
-        .sidebar-nav::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            pointer-events: none;
-            transition: background-color var(--transition-fast);
-            border-radius: 4px;
-            margin: 0 var(--spacing-sm);
-        }
-
-        .sidebar-nav:hover::after {
-            background-color: rgba(var(--accent-primary-rgb, 172, 0, 158), 0.02);
-        }
-
-        /* Feedback visual para clique ativo */
-        .sidebar-nav.click-active::after {
-            background-color: rgba(var(--accent-primary-rgb, 172, 0, 158), 0.05);
-        }
-
-        /* Remover cursor pointer dos elementos interativos para evitar confusão */
-        .sidebar-nav .nav-link,
-        .sidebar-nav .submenu-link,
-        .sidebar-nav .nav-item,
-        .sidebar-nav .submenu-item {
-            cursor: pointer;
-            position: relative;
-            z-index: 1;
-        }
-
-        .nav-item {
-            margin: 0 var(--spacing-md) var(--spacing-xs) var(--spacing-md);
-        }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-            padding: var(--spacing-sm) var(--spacing-md);
-            color: var(--text-secondary);
-            text-decoration: none;
-            border-radius: var(--border-radius);
-            font-weight: 500;
-            transition: all var(--transition-fast);
-            position: relative;
-            cursor: pointer;
-        }
-
-        .nav-link:hover {
-            color: var(--text-primary);
-            background-color: var(--hover-overlay);
-        }
-
-        .nav-link.active {
-            color: var(--accent-primary);
-            background-color: rgba(var(--brand-magenta-rgb), 0.1);
-        }
-
-        .nav-icon {
-            font-size: 1.1rem;
-            width: 20px;
-            text-align: center;
-            flex-shrink: 0;
-        }
-
-        .nav-text {
-            white-space: nowrap;
-            transition: opacity var(--transition-normal);
-        }
-
-        .sidebar.collapsed .nav-text {
-            opacity: 0;
-            width: 0;
-            overflow: hidden;
-        }
-
-        .nav-arrow {
-            margin-left: auto;
-            font-size: 0.8rem;
-            transition: transform var(--transition-fast);
-        }
-
-        .nav-link.expanded .nav-arrow {
-            transform: rotate(90deg);
-        }
-
-        .sidebar.collapsed .nav-arrow {
-            display: none;
-        }
-
-        /* Submenus */
-        .submenu {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height var(--transition-normal);
-            margin-left: calc(var(--spacing-md) + 20px + var(--spacing-sm));
-        }
-
-        .submenu.expanded {
-            max-height: 200px;
-        }
-
-        .sidebar.collapsed .submenu {
-            display: none;
-        }
-
-        .submenu-item {
-            margin: var(--spacing-xs) 0;
-        }
-
-        .submenu-link {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-            padding: var(--spacing-xs) var(--spacing-md);
-            color: var(--text-secondary);
-            text-decoration: none;
-            border-radius: var(--border-radius);
-            font-weight: 400;
-            font-size: 0.95rem;
-            transition: all var(--transition-fast);
-        }
-
-        .submenu-link:hover {
-            color: var(--text-primary);
-            background-color: var(--hover-overlay);
-        }
-
-        .submenu-link.active {
-            color: var(--accent-primary);
-            background-color: rgba(var(--brand-magenta-rgb), 0.08);
-        }
-
-        /* Footer da Sidebar */
-        .sidebar-footer {
-            padding: var(--spacing-md);
-            border-top: 1px solid var(--border-primary);
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-sm);
-            padding: var(--spacing-sm);
-            border-radius: var(--border-radius);
-            transition: background-color var(--transition-fast);
-        }
-
-        .user-info:hover {
-            background-color: var(--hover-overlay);
-        }
-
-        .user-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-on-accent);
-            font-weight: 600;
-            flex-shrink: 0;
-        }
-
-        .user-details {
-            flex: 1;
-            min-width: 0;
-            transition: opacity var(--transition-normal);
-        }
-
-        .sidebar.collapsed .user-details {
-            opacity: 0;
-            width: 0;
-            overflow: hidden;
-        }
-
-        .user-name {
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: var(--text-primary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .user-role {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        /* --- Conteúdo Principal --- */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            background-color: var(--bg-primary);
-        }
-
-        /* Cabeçalho Principal */
-        .main-header {
-            padding: 0 var(--spacing-lg);
-            border-bottom: 1px solid var(--border-primary);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            min-height: 80px;
-            background-color: var(--bg-secondary);
-            box-shadow: var(--shadow-sm);
-        }
-
-        /* --- Novo Header do Dashboard --- */
-        .header {
-            padding: 0 var(--spacing-lg); 
-            border-bottom: 1px solid var(--border-primary);
-            display: flex; 
-            align-items: center; 
-            min-height: 65px; 
-            flex-wrap: wrap; 
-            gap: var(--spacing-md);
-            background-color: var(--bg-secondary) !important;
-            color: var(--text-primary) !important;
-            transition: background-color 0.3s, border-color 0.3s;
-            box-shadow: var(--shadow-sm); 
-            flex-shrink: 0;
-        }
-
-        .header-main {
-            flex: 0 0 auto;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            min-width: 0;
-        }
-
-        .header-title {
-            font-size: 1.45rem !important;
-            font-weight: 600;
-            letter-spacing: 0.01em;
-            margin: 0;
-            color: var(--text-primary);
-            white-space: nowrap;
-            display: inline-block;
-        }
-
-        .header-center { 
-            flex: 1; 
-            display: flex; 
-            justify-content: center; 
-        }
-
-        .header-right { 
-            flex: 0 0 200px; 
-            display: flex; 
-            justify-content: flex-end; 
-            gap: var(--spacing-sm); 
-            align-items: center; 
-        }
-
-        /* Seletor de Unidade e Filtros */
-        .db-title-select, .db-title-label {
-            background: transparent;
-            color: #ccff33;
-            font-family: 'Inter', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 700;
-            border: none;
-            outline: none;
-            padding: 0.25rem 0.4rem;
-            margin-left: 0.6rem;
-            border-radius: 6px;
-            transition: background 0.2s;
-            appearance: none;
-            -webkit-appearance: none;
-            box-shadow: none;
-            cursor: pointer;
-            vertical-align: middle;
-            display: inline-block;
-            white-space: nowrap;
-            min-height: 40px;
-        }
-        .db-title-select:focus, .db-title-select:hover {
-            background: var(--bg-tertiary);
-        }
-        .db-title-select option {
-            color: #ccff33;
-            background: var(--bg-secondary);
-            font-size: 1rem;
-            font-weight: 500;
-        }
-        .db-title-label {
-            cursor: default;
-            color: #ccff33 !important;
-        }
-        
-        /* Filtros de mês e ano menores */
-        .db-title-select.filter-select {
-            font-size: 1rem;
-            font-weight: 600;
-            padding: 0.2rem 0.3rem;
-            min-width: 80px;
-            max-width: 120px;
-        }
-        @media (max-width: 768px) {
-            .db-title-select, .db-title-label {
-                font-size: 1rem;
-                padding: 0 0.3rem;
-            }
-        }
-
-        /* Classe auxiliar para texto secundário */
-        .text-text-secondary { 
-            color: var(--text-secondary); 
-        }
-
-        /* Botões do Header */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: var(--border-radius);
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all var(--transition-fast);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn::after {
-            content: ''; 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0); 
-            transition: background-color var(--transition-fast);
-        }
-
-        .btn:hover::after { 
-            background-color: rgba(255, 255, 255, 0.05); 
-        }
-
-        .btn:active::after { 
-            background-color: rgba(255, 255, 255, 0.1); 
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--border-primary);
-            color: var(--text-primary);
-        }
-
-        .btn-outline:hover {
-            background: var(--bg-tertiary);
-            border-color: var(--accent-primary);
-            color: var(--accent-primary);
-            box-shadow: var(--shadow-md);
-            transform: translateY(-1px);
-        }
-
-        .btn-outline:active {
-            transform: translateY(0);
-        }
-
-        .btn-danger {
-            background-color: var(--danger-color);
-            color: var(--text-on-accent);
-        }
-
-        .btn-danger:hover {
-            background-color: #dc2626;
-            box-shadow: var(--shadow-md);
-            transform: translateY(-1px);
-        }
-
-        .btn-primary {
-            background-color: var(--accent-primary);
-            color: var(--text-on-accent);
-            border: 1px solid var(--accent-primary);
-        }
-
-        .btn-primary:hover {
-            background-color: var(--accent-secondary);
-            border-color: var(--accent-secondary);
-            box-shadow: var(--shadow-md);
-            transform: translateY(-1px);
-        }
-
-        .btn-primary:disabled {
-            background-color: var(--bg-tertiary);
-            color: var(--text-secondary);
-            border-color: var(--border-primary);
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .btn-secondary {
-            background-color: var(--bg-tertiary);
-            color: var(--text-primary);
-            border: 1px solid var(--border-primary);
-        }
-
-        .btn-secondary:hover {
-            background-color: var(--bg-secondary);
-            border-color: var(--border-secondary);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .btn-sm {
-            padding: 0.5rem 1rem;
-            font-size: 0.875rem;
-        }
-
-        .btn-sm i, .btn-sm svg.icon {
-            margin-right: 0.4rem;
-            font-size: 0.8rem;
-            width: 16px;
-            height: 16px;
-        }
-
-        .btn-icon-only {
-            padding: 0.5rem;
-            width: 32px;
-            height: 32px;
-        }
-
-        .btn-icon-only i, .btn-icon-only svg.icon {
-            margin: 0;
-            font-size: 1rem;
-            width: 16px;
-            height: 16px;
-        }
-
-        /* Container dos filtros no centro do header */
-        .filters-container {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: var(--bg-tertiary);
-            padding: 0.75rem 1rem;
-            border-radius: var(--border-radius);
-            border: 1px solid var(--border-primary);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .filter-label {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-left: 0.75rem;
-        }
-
-        .filter-label:first-child {
-            margin-left: 0;
-        }
-
-        /* Classes auxiliares para compatibilidade */
-        .ml-2 {
-            margin-left: 0.5rem;
-        }
-
-        .flex-grow {
-            flex-grow: 1;
-        }
-
-        .bg-tertiary {
-            background-color: var(--bg-tertiary);
-        }
-
-        .rounded-md {
-            border-radius: var(--border-radius);
-        }
-
-        .px-3 {
-            padding-left: 0.75rem;
-            padding-right: 0.75rem;
-        }
-
-        .py-1 {
-            padding-top: 0.25rem;
-            padding-bottom: 0.25rem;
-        }
-
-        .shadow-sm {
-            box-shadow: var(--shadow-sm);
-        }
-
-        .border {
-            border-width: 1px;
-        }
-
-        .border-border-primary {
-            border-color: var(--border-primary);
-        }
-
-        .text-xs {
-            font-size: 0.75rem;
-        }
-
-        .font-semibold {
-            font-weight: 600;
-        }
-
-        .gap-2 {
-            gap: 0.5rem;
-        }
-
-        .items-center {
-            align-items: center;
-        }
-
-        .flex {
-            display: flex;
-        }
-
-        /* Área de Conteúdo */
-        .content-area {
-            flex: 1;
-            padding: var(--spacing-lg);
-            overflow-y: auto;
-        }
-
-        /* Responsividade */
-        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                left: -280px;
-                z-index: 50;
-                height: 100vh;
-                transition: left var(--transition-normal);
-            }
-
-            .sidebar.mobile-open {
-                left: 0;
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
-
-            .page-title {
-                font-size: 1.5rem;
-            }
-
-            .header-main {
-                flex: 1;
-            }
-
-            .header-center {
-                display: none;
-            }
-
-            .global-header {
-                padding: 0 1rem;
-            }
-        }
-
-        /* --- Estilos dos Modais Gerais --- */
-        .modal-backdrop {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            backdrop-filter: blur(2px);
-            opacity: 1;
-            visibility: visible;
-            transition: all 0.3s ease;
-        }
-
-        .modal-backdrop.hidden {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-        }
-
-        .modal {
-            background: var(--bg-primary);
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow: hidden;
-        }
-
-        .modal-header {
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--border-primary);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .modal-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin: 0;
-        }
-
-        .btn-close {
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            font-size: 1.25rem;
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 6px;
-            transition: all 0.2s ease;
-            opacity: 0.7;
-        }
-
-        .btn-close:hover {
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            opacity: 1;
-        }
-
-        .modal-body {
-            padding: 1.5rem;
-        }
-
-        .modal-footer {
-            padding: 1rem 1.5rem;
-            border-top: 1px solid var(--border-primary);
-            display: flex;
-            gap: 0.75rem;
-            justify-content: flex-end;
-        }
-
-        /* --- Estilos do Modal de Upload - Baseado no Dash Resultados --- */
-        .upload-area {
-            border: 2px dashed var(--border-primary);
-            border-radius: var(--border-radius);
-            padding: 3rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: var(--bg-tertiary);
-            color: var(--text-secondary);
-        }
-
-        .upload-area:hover, .upload-area.dragover {
-            background: var(--bg-tertiary);
-            border-color: var(--accent-primary);
-            color: var(--text-primary);
-        }
-
-        .upload-area i {
-            color: var(--accent-primary);
-        }
-
-        .drop-zone {
-            border: 2px dashed var(--border-primary);
-            border-radius: var(--border-radius);
-            padding: 3rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: var(--bg-tertiary);
-            color: var(--text-secondary);
-        }
-
-        .drop-zone:hover, .drop-zone.dragover {
-            background: var(--bg-tertiary);
-            border-color: var(--accent-primary);
-            color: var(--text-primary);
-        }
-
-        .drop-zone i {
-            color: var(--accent-primary);
-        }
-
-        .upload-progress {
-            background: var(--bg-tertiary);
-            border-radius: var(--border-radius);
-            padding: 1rem;
-            margin-top: 1rem;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: var(--bg-tertiary);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--primary-color);
-            transition: width 0.3s ease;
-            width: 0%;
-        }
-
-        .upload-status {
-            padding: 0.75rem 1rem;
-            border-radius: var(--border-radius);
-            margin-top: 1rem;
-            font-weight: 500;
-        }
-
-        /* Estilos adicionais para o modal de upload */
-        .upload-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            color: var(--accent-primary);
-        }
-
-        .upload-text {
-            font-size: 1.1rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .btn-link {
-            background: none;
-            border: none;
-            color: var(--accent-primary);
-            cursor: pointer;
-            text-decoration: underline;
-            font-size: inherit;
-            font-family: inherit;
-            padding: 0;
-        }
-
-        .btn-link:hover {
-            color: var(--accent-secondary);
-        }
-
-        .upload-preview {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-primary);
-            border-radius: var(--border-radius);
-            padding: 1rem;
-            margin-top: 1rem;
-        }
-
-        .file-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .file-info i {
-            font-size: 2rem;
-            color: var(--accent-primary);
-        }
-
-        .file-details {
-            flex: 1;
-        }
-
-        .file-name {
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 0.25rem;
-        }
-
-        .file-size {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        .status-message {
-            padding: 0.75rem;
-            border-radius: var(--border-radius);
-            font-weight: 500;
-        }
-
-        .status-message.info {
-            background: rgba(59, 130, 246, 0.1);
-            color: #3b82f6;
-            border: 1px solid rgba(59, 130, 246, 0.2);
-        }
-
-        .status-message.success {
-            background: rgba(34, 197, 94, 0.1);
-            color: #22c55e;
-            border: 1px solid rgba(34, 197, 94, 0.2);
-        }
-
-        .status-message.warning {
-            background: rgba(245, 158, 11, 0.1);
-            color: #f59e0b;
-            border: 1px solid rgba(245, 158, 11, 0.2);
-        }
-
-        .status-message.error {
-            background: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
-            border: 1px solid rgba(239, 68, 68, 0.2);
-        }
-
-        /* CSS complementar para modal de upload */
-        .upload-area.dragover {
-            border-color: var(--success-color) !important;
-            background: rgba(112, 224, 0, 0.05) !important;
-            transform: scale(1.02);
-        }
-
-        .modal {
-            animation: modalSlideIn 0.3s ease-out;
-        }
-
-        @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-50px) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        .modal-title i {
-            color: var(--accent-primary);
-        }
-
-        .btn-close:hover {
-            transform: scale(1.1);
-        }
-
-        /* --- Estilos do Modal de Login --- */
-        .login-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(1, 13, 50, 0.95);
-            backdrop-filter: blur(12px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        .login-modal {
-            background: rgba(1, 13, 50, 0.9);
-            padding: 40px 30px;
-            border-radius: 20px;
-            backdrop-filter: blur(12px);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            width: 100%;
-            max-width: 400px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            animation: slideIn 0.3s ease-out;
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-20px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        .login-modal h2 {
-            color: #FFFFFF;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 28px;
-            font-weight: 600;
-            letter-spacing: 1px;
-        }
-
-        .login-modal .logo-container {
-            text-align: center;
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .login-modal .logo-container img {
-            max-width: 200px;
-            height: auto;
-            display: block;
-        }
-
-        .input-group {
-            margin-bottom: 20px;
-            position: relative;
-        }
-
-        .input-group label {
-            color: #FFFFFF;
-            display: block;
-            margin-bottom: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            opacity: 0.9;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 14px 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.15);
-            color: #FFFFFF;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-
-        .input-group input:focus {
-            outline: none;
-            background: rgba(255, 255, 255, 0.25);
-            border-color: #fd24a0;
-            box-shadow: 0 0 12px rgba(253, 36, 160, 0.2);
-        }
-
-        .input-group input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        .login-btn {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 10px;
-            background: #fd24a0;
-            color: #010d32;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .login-btn:hover {
-            background: #E01F8C;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(253, 36, 160, 0.4);
-        }
-
-        .login-btn:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 8px rgba(253, 36, 160, 0.2);
-        }
-
-        .login-btn:disabled {
-            background: #666;
-            color: #999;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .error-message {
-            color: #FF6B6B;
-            text-align: center;
-            margin-top: 15px;
-            font-size: 14px;
-            display: none;
-            font-weight: 500;
-            padding: 10px;
-            background: rgba(255, 107, 107, 0.1);
-            border-radius: 8px;
-            border: 1px solid rgba(255, 107, 107, 0.2);
-        }
-
-        .success-message {
-            color: #4CAF50;
-            text-align: center;
-            margin-top: 15px;
-            font-size: 14px;
-            display: none;
-            font-weight: 500;
-            padding: 10px;
-            background: rgba(76, 175, 80, 0.1);
-            border-radius: 8px;
-            border: 1px solid rgba(76, 175, 80, 0.2);
-        }
-
-        /* Estados de loading */
-        .loading-spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(1, 13, 50, 0.3);
-            border-radius: 50%;
-            border-top-color: #010d32;
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 8px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-    </style>
+    <!-- CSS Centralizado do DromeFlow -->
+    <link rel="stylesheet" href="css/main.css">
+    
 </head>
 <body>
     <div class="app-container">
@@ -1269,7 +25,7 @@
         <header class="global-header">
             <div class="header-left">
                 <div class="logo-brand">
-                    <img src="https://iili.io/3RBGZox.png" alt="DromeFlow Logo" style="height: 45px; width: auto;">
+                    <img src="https://iili.io/3RBGZox.png" alt="DromeFlow Logo" class="logo-img">
                 </div>
             </div>
             <div class="header-main">
@@ -1317,7 +73,7 @@
                     <i class="fas fa-moon"></i>
                 </button>
                 <!-- Botão de Sair -->
-                <button id="logoutBtn" class="btn btn-sm btn-danger btn-icon-only" title="Sair" onclick="logout()">
+                <button id="logoutBtn" class="btn btn-sm btn-danger btn-icon-only" title="Sair" onclick="logout().catch(console.error)">
                     <i class="fas fa-sign-out-alt"></i>
                 </button>
             </div>
@@ -1351,7 +107,7 @@
 
                     <!-- Dashboard -->
                     <div class="nav-item">
-                        <a href="#" class="nav-link active" data-module="dashboard">
+                        <a href="#" class="nav-link" data-module="dashboard">
                             <i class="nav-icon fas fa-chart-pie"></i>
                             <span class="nav-text">Dashboard</span>
                         </a>
@@ -1400,12 +156,14 @@
             <main class="main-content">
                 <!-- Área de Conteúdo -->
                 <div class="content-area" id="contentArea">
-                    <div style="text-align: center; padding: 4rem 2rem;">
-                        <i class="fas fa-chart-pie" style="font-size: 4rem; color: var(--accent-primary); margin-bottom: 2rem;"></i>
-                        <h2 style="font-size: 2rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">
+                    <div class="welcome-container">
+                        <div class="welcome-icon">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <h2 class="welcome-title">
                             Bem-vindo ao DromeFlow
                         </h2>
-                        <p style="font-size: 1.1rem; color: var(--text-secondary); max-width: 600px; margin: 0 auto;">
+                        <p class="welcome-description">
                             Sistema de gestão completo para sua empresa. Utilize o menu lateral para navegar entre os módulos disponíveis.
                         </p>
                     </div>
@@ -1431,6 +189,7 @@
                     <input type="password" id="password" name="password" placeholder="Digite sua senha" required>
                 </div>
                 <button type="submit" class="login-btn" id="loginBtn">Entrar</button>
+                
                 <div class="error-message" id="errorMessage"></div>
                 <div class="success-message" id="successMessage"></div>
             </form>
@@ -1454,13 +213,13 @@
                     <p class="upload-text">
                         Arraste e solte seu arquivo XLSX aqui
                     </p>
-                    <p style="margin: 1rem 0; color: var(--text-secondary);">ou</p>
+                    <p class="upload-separator">ou</p>
                     <button type="button" class="btn btn-primary" onclick="document.getElementById('xlsxInput').click()">
                         <i class="fas fa-folder-open"></i>
                         Selecionar Arquivo
                     </button>
-                    <input type="file" id="xlsxInput" accept=".xlsx" style="display: none;">
-                    <div style="margin-top: 1.5rem; font-size: 0.875rem; color: var(--text-secondary); text-align: center;">
+                    <input type="file" id="xlsxInput" accept=".xlsx" class="hidden-input">
+                    <div class="upload-info">
                         <p><strong>Formatos aceitos:</strong> .xlsx</p>
                         <p><strong>Tamanho máximo:</strong> 10MB</p>
                     </div>
@@ -1553,10 +312,725 @@
             // Configurar listeners para filtros do dashboard
             setupDashboardFilters();
             
-            // Carregar dados iniciais do dashboard
-            loadDashboardData();
+            // Inicializar submenu padrão (Geral)
+            setTimeout(() => {
+                loadDashboardSubmenu('geral');
+            }, 100);
             
             console.log('✅ Dashboard pronto para uso');
+        }
+
+        // Função para carregar submenu do dashboard
+        function loadDashboardSubmenu(submenu) {
+            console.log('[Dashboard] Carregando submenu:', submenu);
+            
+            // Ocultar todas as seções
+            document.querySelectorAll('.dashboard-section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Mostrar seção selecionada
+            const targetSection = document.getElementById(`dashboard-${submenu}`);
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+                
+                // Atualizar título e breadcrumb
+                updateDashboardHeader(submenu);
+                
+                // Carregar dados específicos da seção
+                if (submenu === 'geral') {
+                    loadDashboardGeral();
+                } else if (submenu === 'clientes') {
+                    loadDashboardClientes();
+                }
+            }
+        }
+
+        // Atualizar header do dashboard
+        function updateDashboardHeader(submenu) {
+            const pageTitle = document.getElementById('pageTitle');
+            
+            const configs = {
+                geral: {
+                    title: 'Dashboard - Geral'
+                },
+                clientes: {
+                    title: 'Dashboard - Clientes'
+                }
+            };
+            
+            const config = configs[submenu];
+            if (config && pageTitle) {
+                pageTitle.textContent = config.title;
+            }
+        }
+
+        // Limpar submenu do header
+        function clearHeaderSubmenu() {
+            const pageTitle = document.getElementById('pageTitle');
+            if (pageTitle) {
+                pageTitle.textContent = 'Dashboard';
+            }
+        }
+
+        // Carregar dados da seção Geral
+        function loadDashboardGeral() {
+            console.log('[Dashboard] Carregando seção Geral');
+            loadDashboardData();
+        }
+
+        // Carregar dados da seção Clientes
+        function loadDashboardClientes() {
+            console.log('[Dashboard] Carregando seção Clientes');
+            // Carregar dados específicos de clientes
+            loadClientData();
+        }
+
+        // Função global para navegação externa
+        window.loadDashboardSubmenu = loadDashboardSubmenu;
+
+        // Função para carregar submenu de Gestão do Sistema
+        function loadGestaoSistemaSubmenu(submenu) {
+            console.log('[Gestão Sistema] Carregando submenu:', submenu);
+            
+            // Ocultar todas as seções
+            const gestaoSections = document.querySelectorAll('.gestao-section');
+            console.log('[DEBUG] Seções encontradas:', gestaoSections.length);
+            gestaoSections.forEach(section => {
+                console.log('[DEBUG] Ocultando seção:', section.id);
+                section.classList.add('hidden');
+            });
+            
+            // Mostrar seção selecionada
+            const targetSection = document.getElementById(`gestao-${submenu}`);
+            console.log('[DEBUG] Procurando seção:', `gestao-${submenu}`);
+            console.log('[DEBUG] Seção encontrada:', targetSection);
+            
+            if (targetSection) {
+                console.log('[DEBUG] Removendo classe hidden da seção:', targetSection.id);
+                targetSection.classList.remove('hidden');
+                
+                // Verificar se realmente foi removida
+                console.log('[DEBUG] Classes após remoção:', targetSection.className);
+                console.log('[DEBUG] Display computado:', window.getComputedStyle(targetSection).display);
+                
+                // Atualizar título e breadcrumb
+                updateGestaoSistemaHeader(submenu);
+                
+                // Carregar dados específicos da seção
+                if (submenu === 'unidades') {
+                    loadUnidades();
+                } else if (submenu === 'administradores') {
+                    loadAdministradores();
+                }
+            } else {
+                console.error('[ERRO] Seção não encontrada:', `gestao-${submenu}`);
+                console.log('[DEBUG] Seções disponíveis:');
+                document.querySelectorAll('[id^="gestao-"]').forEach(el => {
+                    console.log(' -', el.id);
+                });
+            }
+        }
+
+        // Atualizar header da gestão do sistema
+        function updateGestaoSistemaHeader(submenu) {
+            const pageTitle = document.getElementById('pageTitle');
+            
+            const configs = {
+                unidades: {
+                    title: 'Gestão do Sistema - Unidades'
+                },
+                administradores: {
+                    title: 'Gestão do Sistema - Administradores'
+                }
+            };
+            
+            const config = configs[submenu];
+            if (config && pageTitle) {
+                pageTitle.textContent = config.title;
+            }
+        }
+
+        // Função global para navegação externa
+        window.loadGestaoSistemaSubmenu = loadGestaoSistemaSubmenu;
+
+        // Funções para carregar dados das seções de Gestão do Sistema
+        async function loadUnidades() {
+            console.log('[Gestão Sistema] Carregando dados das unidades do banco de dados');
+            
+            const tableBody = document.getElementById('unitsTableBody');
+            if (!tableBody) {
+                console.error('❌ Elemento unitsTableBody não encontrado');
+                return;
+            }
+
+            // Mostrar loading
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="4" class="empty-state">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            Carregando unidades...
+                        </div>
+                    </td>
+                </tr>
+            `;
+
+            try {
+                // Buscar unidades do banco de dados
+                const { data: units, error } = await supabase
+                    .from('units')
+                    .select('*')
+                    .eq('is_active', true)
+                    .order('name', { ascending: true });
+
+                if (error) {
+                    console.error('❌ Erro ao carregar unidades:', error);
+                    throw error;
+                }
+
+                console.log('📊 Unidades carregadas:', units?.length || 0);
+
+                if (!units || units.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="empty-state">
+                                <div class="empty-state-content">
+                                    <i class="fas fa-building empty-state-icon"></i>
+                                    <h3>Nenhuma unidade encontrada</h3>
+                                    <p>Não há unidades cadastradas no sistema.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                // Carregar dados adicionais para cada unidade
+                const unitsWithStats = await Promise.all(units.map(async (unit) => {
+                    try {
+                        // Contar administradores
+                        const { data: adminCount } = await supabase
+                            .from('user_units')
+                            .select('user_id', { count: 'exact' })
+                            .eq('unit_id', unit.id);
+
+                        // Contar módulos ativos
+                        const { data: moduleCount } = await supabase
+                            .from('unit_modules')
+                            .select('module_id', { count: 'exact' })
+                            .eq('unit_id', unit.id);
+
+                        return {
+                            ...unit,
+                            adminCount: adminCount?.length || 0,
+                            moduleCount: moduleCount?.length || 0
+                        };
+                    } catch (error) {
+                        console.error(`❌ Erro ao carregar stats para unidade ${unit.name}:`, error);
+                        return {
+                            ...unit,
+                            adminCount: 0,
+                            moduleCount: 0
+                        };
+                    }
+                }));
+
+                // Preencher tabela com dados reais
+                tableBody.innerHTML = unitsWithStats.map(unit => `
+                    <tr onclick="viewUnitDetails('${unit.id}')" class="clickable-row">
+                        <td>${unit.name}</td>
+                        <td>${unit.adminCount} administrador${unit.adminCount !== 1 ? 'es' : ''}</td>
+                        <td>${unit.moduleCount} módulo${unit.moduleCount !== 1 ? 's' : ''}</td>
+                        <td>
+                            <span class="badge badge-${unit.is_active ? 'success' : 'warning'}">
+                                ${unit.is_active ? 'Ativo' : 'Inativo'}
+                            </span>
+                        </td>
+                    </tr>
+                `).join('');
+
+                console.log('✅ Tabela de unidades atualizada com dados reais');
+
+            } catch (error) {
+                console.error('❌ Erro ao carregar unidades:', error);
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="empty-state">
+                            <div class="error-state-content">
+                                <i class="fas fa-exclamation-triangle error-state-icon"></i>
+                                <h3>Erro ao carregar unidades</h3>
+                                <p>Ocorreu um erro ao carregar os dados. Tente novamente.</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        async function loadAdministradores() {
+            console.log('[Gestão Sistema] Carregando dados dos administradores do banco de dados');
+            
+            const tableBody = document.getElementById('adminsTableBody');
+            if (!tableBody) {
+                console.error('❌ Elemento adminsTableBody não encontrado');
+                return;
+            }
+
+            // Mostrar loading
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="empty-state">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            Carregando administradores...
+                        </div>
+                    </td>
+                </tr>
+            `;
+
+            try {
+                // Buscar administradores do banco de dados (usuários com role = 'admin')
+                const { data: admins, error } = await supabase
+                    .from('users')
+                    .select(`
+                        id,
+                        email,
+                        created_at,
+                        role_id,
+                        roles (
+                            name
+                        )
+                    `)
+                    .eq('roles.name', 'admin')  // Buscar pelo nome do role
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    console.error('❌ Erro ao carregar administradores:', error);
+                    throw error;
+                }
+
+                console.log('📊 Administradores carregados:', admins?.length || 0);
+
+                if (!admins || admins.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="empty-state">
+                                <div class="empty-state-content">
+                                    <i class="fas fa-user-shield empty-state-icon"></i>
+                                    <h3>Nenhum administrador encontrado</h3>
+                                    <p>Não há administradores cadastrados no sistema.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                // Carregar unidades para cada administrador
+                const adminsWithUnits = await Promise.all(admins.map(async (admin) => {
+                    try {
+                        // Buscar unidades do administrador
+                        const { data: userUnits } = await supabase
+                            .from('user_units')
+                            .select(`
+                                units (
+                                    id,
+                                    name
+                                )
+                            `)
+                            .eq('user_id', admin.id);
+
+                        const units = userUnits?.map(uu => uu.units.name).join(', ') || 'Nenhuma unidade';
+
+                        return {
+                            ...admin,
+                            unitsNames: units,
+                            unitsCount: userUnits?.length || 0
+                        };
+                    } catch (error) {
+                        console.error(`❌ Erro ao carregar unidades para admin ${admin.email}:`, error);
+                        return {
+                            ...admin,
+                            unitsNames: 'Erro ao carregar',
+                            unitsCount: 0
+                        };
+                    }
+                }));
+
+                // Preencher tabela com dados reais
+                tableBody.innerHTML = adminsWithUnits.map(admin => {
+                    const createdDate = new Date(admin.created_at).toLocaleDateString('pt-BR');
+                    // Assumir que todos os administradores estão ativos por padrão (já que não temos is_active)
+                    const statusBadge = '<span class="badge badge-success">Ativo</span>';
+
+                    return `
+                        <tr onclick="openAdminCard('${admin.id}')" class="clickable-row">
+                            <td>${admin.email}</td>
+                            <td>${admin.unitsNames}</td>
+                            <td>${createdDate}</td>
+                            <td>${statusBadge}</td>
+                            <td onclick="event.stopPropagation();">
+                                <button class="btn btn-sm btn-warning" onclick="editAdmin('${admin.id}')">
+                                    <i class="fas fa-edit"></i>
+                                    Editar
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+                console.log('✅ Tabela de administradores atualizada com dados reais');
+
+            } catch (error) {
+                console.error('❌ Erro ao carregar administradores:', error);
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            <div class="error-state-content">
+                                <i class="fas fa-exclamation-triangle error-state-icon"></i>
+                                <h3>Erro ao carregar administradores</h3>
+                                <p>Ocorreu um erro ao carregar os dados. Tente novamente.</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Funções auxiliares para Gestão do Sistema
+        async function openAdminCard(adminId) {
+            console.log('[Admin Card] Carregando dados do administrador:', adminId);
+            
+            const card = document.getElementById('adminInfoCard');
+            if (!card) {
+                console.error('❌ Elemento adminInfoCard não encontrado');
+                return;
+            }
+
+            try {
+                // Mostrar loading no card
+                card.style.display = 'block';
+                document.getElementById('adminEmailInfo').textContent = 'Carregando...';
+                document.getElementById('adminUnitsInfo').textContent = 'Carregando...';
+                document.getElementById('adminCreatedAtInfo').textContent = 'Carregando...';
+                document.getElementById('adminStatusInfo').innerHTML = 'Carregando...';
+
+                // Buscar dados completos do administrador com role
+                const { data: admin, error: adminError } = await supabase
+                    .from('users')
+                    .select(`
+                        id,
+                        email,
+                        created_at,
+                        role_id,
+                        roles (name, display_name)
+                    `)
+                    .eq('id', adminId)
+                    .single();
+
+                if (adminError) {
+                    console.error('❌ Erro ao carregar dados do administrador:', adminError);
+                    throw adminError;
+                }
+
+                // Buscar unidades do administrador
+                const { data: adminUnits, error: unitsError } = await supabase
+                    .from('user_units')
+                    .select(`
+                        unit_id,
+                        units (
+                            id,
+                            name
+                        )
+                    `)
+                    .eq('user_id', adminId);
+
+                if (unitsError) {
+                    console.error('❌ Erro ao carregar unidades do administrador:', unitsError);
+                    throw unitsError;
+                }
+
+                // 🔧 NOVO: Buscar permissões de módulos concedidas pelo admin
+                const { data: modulePermissions, error: permissionsError } = await supabase
+                    .from('user_module_permissions')
+                    .select(`
+                        user_id,
+                        unit_id,
+                        module_id,
+                        granted_at,
+                        users (
+                            id,
+                            email,
+                            created_at,
+                            role_id,
+                            roles (name, display_name)
+                        ),
+                        units (
+                            id,
+                            name
+                        ),
+                        modules (
+                            id,
+                            name,
+                            display_name,
+                            icon
+                        )
+                    `)
+                    .eq('granted_by', adminId)
+                    .order('granted_at', { ascending: false });
+
+                if (permissionsError) {
+                    console.error('❌ Erro ao carregar permissões de módulos:', permissionsError);
+                    // Não falhar por este erro, apenas mostrar mensagem
+                }
+
+                // Preencher informações básicas
+                document.getElementById('adminEmailInfo').textContent = admin.email || 'N/A';
+                document.getElementById('adminCreatedAtInfo').textContent = admin.created_at 
+                    ? new Date(admin.created_at).toLocaleDateString('pt-BR')
+                    : 'N/A';
+                
+                // Status sempre ativo
+                document.getElementById('adminStatusInfo').innerHTML = 
+                    '<span class="badge badge-success">Ativo</span>';
+
+                // Preencher unidades do administrador
+                if (adminUnits && adminUnits.length > 0) {
+                    const unitNames = adminUnits
+                        .map(uu => uu.units?.name || 'Unidade desconhecida')
+                        .join(', ');
+                    document.getElementById('adminUnitsInfo').textContent = unitNames;
+                } else {
+                    document.getElementById('adminUnitsInfo').textContent = 'Nenhuma unidade vinculada';
+                }
+
+                // 🔧 NOVO: Preencher lista de usuários criados com módulos liberados
+                const usersList = document.getElementById('adminUsersList');
+                if (usersList) {
+                    if (modulePermissions && modulePermissions.length > 0) {
+                        // Agrupar permissões por usuário
+                        const userPermissionsMap = new Map();
+                        
+                        modulePermissions.forEach(permission => {
+                            const userId = permission.user_id;
+                            
+                            if (!userPermissionsMap.has(userId)) {
+                                userPermissionsMap.set(userId, {
+                                    user: permission.users,
+                                    permissions: []
+                                });
+                            }
+                            
+                            userPermissionsMap.get(userId).permissions.push({
+                                unit: permission.units,
+                                module: permission.modules,
+                                granted_at: permission.granted_at
+                            });
+                        });
+
+                        // Gerar HTML para cada usuário
+                        usersList.innerHTML = Array.from(userPermissionsMap.entries()).map(([userId, userData]) => {
+                            const user = userData.user;
+                            const permissions = userData.permissions;
+                            
+                            const roleName = user.roles?.display_name || 'Usuário';
+                            const createdDate = user.created_at 
+                                ? new Date(user.created_at).toLocaleDateString('pt-BR')
+                                : 'N/A';
+                            
+                            // Agrupar permissões por unidade
+                            const unitGroups = new Map();
+                            permissions.forEach(perm => {
+                                const unitId = perm.unit.id;
+                                if (!unitGroups.has(unitId)) {
+                                    unitGroups.set(unitId, {
+                                        unit: perm.unit,
+                                        modules: []
+                                    });
+                                }
+                                unitGroups.get(unitId).modules.push(perm.module);
+                            });
+
+                            // Gerar lista de unidades e módulos
+                            const unitsModulesHTML = Array.from(unitGroups.entries()).map(([unitId, unitData]) => {
+                                const unit = unitData.unit;
+                                const modules = unitData.modules;
+                                
+                                const modulesHTML = modules.map(module => 
+                                    `<span class="module-badge">
+                                        <i class="${module.icon || 'fas fa-cube'}"></i> ${module.display_name || module.name}
+                                    </span>`
+                                ).join('');
+                                
+                                return `
+                                    <div class="unit-modules-container">
+                                        <div class="unit-title">
+                                            📍 ${unit.name}
+                                        </div>
+                                        <div class="modules-list">
+                                            ${modulesHTML}
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('');
+                            
+                            return `
+                                <div class="user-item">
+                                    <!-- Header do Usuário -->
+                                    <div class="user-header">
+                                        <div class="user-main-info">
+                                            <div class="user-name">>
+                                                👤 ${user.email}
+                                            </div>
+                                            <div class="user-email">
+                                                ${roleName}
+                                            </div>
+                                        </div>
+                                        <div class="user-date">
+                                            Criado em:<br>
+                                            <strong>${createdDate}</strong>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Permissões do Usuário -->
+                                    <div class="user-permissions">
+                                        <div class="permissions-title">
+                                            🔑 Módulos Liberados:
+                                        </div>
+                                        ${unitsModulesHTML}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                        
+                    } else {
+                        usersList.innerHTML = `
+                            <div class="empty-state-admin">
+                                <i class="fas fa-user-shield empty-state-icon"></i>
+                                <p class="empty-state-title">
+                                    Nenhuma permissão de módulo foi concedida por este administrador ainda.
+                                </p>
+                                <p class="empty-state-subtitle">
+                                    Quando este admin liberar módulos para usuários, eles aparecerão aqui organizados por unidade.
+                                </p>
+                            </div>
+                        `;
+                    }
+                }
+
+                console.log('✅ Dados do administrador e permissões carregados com sucesso');
+
+            } catch (error) {
+                console.error('❌ Erro ao carregar dados do administrador:', error);
+                
+                // Mostrar erro na interface
+                const errorMessage = error.message || 'Erro desconhecido ao carregar dados';
+                document.getElementById('adminEmailInfo').textContent = 'Erro ao carregar';
+                document.getElementById('adminUnitsInfo').textContent = 'Erro ao carregar';
+                document.getElementById('adminCreatedAtInfo').textContent = 'Erro ao carregar';
+                document.getElementById('adminStatusInfo').innerHTML = 
+                    '<span class="badge badge-danger">Erro</span>';
+                
+                const usersList = document.getElementById('adminUsersList');
+                if (usersList) {
+                    usersList.innerHTML = `
+                        <div class="error-message-container">
+                            <i class="fas fa-exclamation-triangle error-icon"></i>
+                            <p>Erro ao carregar dados: ${errorMessage}</p>
+                            <button onclick="openAdminCard('${adminId}')" class="admin-open-button">
+                                Tentar Novamente
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function closeAdminCard() {
+            const card = document.getElementById('adminInfoCard');
+            if (card) {
+                card.style.display = 'none';
+            }
+        }
+
+        function editAdmin(adminId) {
+            console.log('[Gestão Sistema] Editando administrador:', adminId);
+            // TODO: Implementar modal de edição
+        }
+
+        function openAdminModal() {
+            console.log('[Gestão Sistema] Abrindo modal para novo administrador');
+            const modal = document.getElementById('adminModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+            }
+        }
+
+        // Função para visualizar detalhes da unidade
+        async function viewUnitDetails(unitId) {
+            console.log('[Gestão Sistema] Visualizando detalhes da unidade:', unitId);
+            
+            try {
+                // Buscar dados completos da unidade
+                const { data: unit, error: unitError } = await supabase
+                    .from('units')
+                    .select('*')
+                    .eq('id', unitId)
+                    .single();
+
+                if (unitError) {
+                    console.error('❌ Erro ao carregar dados da unidade:', unitError);
+                    throw unitError;
+                }
+
+                // Buscar administradores da unidade
+                const { data: unitAdmins, error: adminsError } = await supabase
+                    .from('user_units')
+                    .select(`
+                        users (
+                            id,
+                            email,
+                            is_active
+                        )
+                    `)
+                    .eq('unit_id', unitId);
+
+                if (adminsError) {
+                    console.error('❌ Erro ao carregar administradores da unidade:', adminsError);
+                }
+
+                // Buscar módulos da unidade
+                const { data: unitModules, error: modulesError } = await supabase
+                    .from('unit_modules')
+                    .select(`
+                        modules (
+                            id,
+                            name,
+                            display_name,
+                            icon
+                        )
+                    `)
+                    .eq('unit_id', unitId);
+
+                if (modulesError) {
+                    console.error('❌ Erro ao carregar módulos da unidade:', modulesError);
+                }
+
+                // Por enquanto, apenas log dos dados - depois pode implementar um modal
+                console.log('📊 Detalhes da unidade:', {
+                    unit,
+                    admins: unitAdmins?.map(ua => ua.users) || [],
+                    modules: unitModules?.map(um => um.modules) || []
+                });
+
+                // TODO: Implementar modal ou card de detalhes da unidade
+                alert(`Detalhes da unidade: ${unit.name}\nAdministradores: ${unitAdmins?.length || 0}\nMódulos: ${unitModules?.length || 0}`);
+
+            } catch (error) {
+                console.error('❌ Erro ao visualizar detalhes da unidade:', error);
+                alert('Erro ao carregar detalhes da unidade. Tente novamente.');
+            }
         }
 
         // Configurar filtros do dashboard
@@ -1565,29 +1039,45 @@
             const monthFilter = document.getElementById('monthFilter');
             const yearFilter = document.getElementById('yearFilter');
             
+            console.log('🔧 Configurando listeners dos filtros do dashboard');
+            
             // Listener para mudança de unidade
             if (unitSelect) {
                 unitSelect.addEventListener('change', (e) => {
                     console.log('🔄 Unidade alterada:', e.target.value);
-                    loadDashboardData();
+                    setTimeout(() => loadDashboardData(), 100);
                 });
             }
             
-            // Listener para mudança de mês
+            // 🔧 CORREÇÃO: Listener para mudança de mês
             if (monthFilter) {
                 monthFilter.addEventListener('change', (e) => {
                     console.log('🔄 Mês alterado:', e.target.value);
-                    loadDashboardData();
+                    const monthName = e.target.selectedOptions[0]?.textContent || 'Todos';
+                    console.log('📅 Nome do mês:', monthName);
+                    
+                    // Forçar recarregamento dos dados com novo filtro
+                    setTimeout(() => {
+                        console.log('🔄 Recarregando dados do dashboard após mudança de mês...');
+                        loadDashboardData();
+                    }, 100);
                 });
             }
             
-            // Listener para mudança de ano
+            // 🔧 CORREÇÃO: Listener para mudança de ano
             if (yearFilter) {
                 yearFilter.addEventListener('change', (e) => {
                     console.log('🔄 Ano alterado:', e.target.value);
-                    loadDashboardData();
+                    
+                    // Forçar recarregamento dos dados com novo filtro
+                    setTimeout(() => {
+                        console.log('🔄 Recarregando dados do dashboard após mudança de ano...');
+                        loadDashboardData();
+                    }, 100);
                 });
             }
+            
+            console.log('✅ Event listeners dos filtros configurados');
         }
 
         // Carregar dados do dashboard
@@ -1628,43 +1118,71 @@
             const monthFilter = document.getElementById('monthFilter');
             const yearFilter = document.getElementById('yearFilter');
             
-            return {
+            const filters = {
                 month: monthFilter?.value || null,
                 year: yearFilter?.value || new Date().getFullYear().toString()
             };
+            
+            // 🔧 CORREÇÃO: Log detalhado dos filtros
+            console.log('🔍 Filtros atuais obtidos:', {
+                month: filters.month,
+                monthText: monthFilter?.selectedOptions[0]?.textContent,
+                year: filters.year,
+                yearText: yearFilter?.selectedOptions[0]?.textContent
+            });
+            
+            return filters;
         }
 
         // Carregar métricas principais
         async function loadMainMetrics(unitId, filters) {
             try {
+                console.log('📊 Carregando métricas com filtros:', filters);
+                
                 let query = supabase
                     .from('resultados')
                     .select('*')
                     .eq('unit_id', unitId);
                 
-                // Aplicar filtros de data
+                // 🔧 CORREÇÃO: Aplicar filtros de data corretamente
                 if (filters.year) {
-                    query = query.gte('data', `${filters.year}-01-01`);
-                    query = query.lte('data', `${filters.year}-12-31`);
-                }
-                
-                if (filters.month) {
-                    const month = filters.month.padStart(2, '0');
-                    query = query.gte('data', `${filters.year}-${month}-01`);
-                    
-                    // Último dia do mês
-                    const lastDay = new Date(filters.year, filters.month, 0).getDate();
-                    query = query.lte('data', `${filters.year}-${month}-${lastDay}`);
+                    if (filters.month) {
+                        // Filtro específico de mês e ano
+                        const month = filters.month.padStart(2, '0');
+                        const startDate = `${filters.year}-${month}-01`;
+                        
+                        // Calcular último dia do mês
+                        const lastDay = new Date(filters.year, parseInt(filters.month), 0).getDate();
+                        const endDate = `${filters.year}-${month}-${lastDay.toString().padStart(2, '0')}`;
+                        
+                        console.log('🗓️ Aplicando filtro de mês:', { startDate, endDate, month: filters.month, year: filters.year });
+                        query = query.gte('data', startDate).lte('data', endDate);
+                    } else {
+                        // Apenas filtro de ano
+                        console.log('🗓️ Aplicando filtro de ano:', filters.year);
+                        query = query.gte('data', `${filters.year}-01-01`);
+                        query = query.lte('data', `${filters.year}-12-31`);
+                    }
                 }
                 
                 const { data: resultados, error } = await query;
                 
-                if (error) throw error;
+                if (error) {
+                    console.error('❌ Erro na query:', error);
+                    throw error;
+                }
                 
-                console.log('📊 Resultados carregados:', resultados?.length || 0);
+                console.log('📊 Resultados carregados com filtros:', {
+                    total: resultados?.length || 0,
+                    filters: filters,
+                    amostra: resultados?.slice(0, 3)
+                });
+                
+                // 🔧 NOVO: Carregar dados do período anterior para comparação
+                const previousPeriodData = await loadPreviousPeriodData(unitId, filters);
                 
                 // Calcular métricas
-                const metrics = calculateMetrics(resultados || []);
+                const metrics = calculateMetrics(resultados || [], filters, previousPeriodData);
                 
                 // Atualizar interface
                 updateMetricCards(metrics);
@@ -1675,46 +1193,83 @@
             }
         }
 
+        // 🔧 NOVA: Função para carregar dados do período anterior
+        async function loadPreviousPeriodData(unitId, filters) {
+            try {
+                let query = supabase
+                    .from('resultados')
+                    .select('*')
+                    .eq('unit_id', unitId);
+                
+                // Calcular período anterior baseado nos filtros
+                if (filters.year) {
+                    if (filters.month) {
+                        // Mês anterior
+                        const currentMonth = parseInt(filters.month);
+                        const currentYear = parseInt(filters.year);
+                        
+                        const prevMonth = currentMonth === 1 ? 12 : currentMonth - 1;
+                        const prevYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+                        
+                        const month = prevMonth.toString().padStart(2, '0');
+                        const startDate = `${prevYear}-${month}-01`;
+                        const lastDay = new Date(prevYear, prevMonth, 0).getDate();
+                        const endDate = `${prevYear}-${month}-${lastDay.toString().padStart(2, '0')}`;
+                        
+                        console.log('🗓️ Carregando período anterior (mês):', { startDate, endDate });
+                        query = query.gte('data', startDate).lte('data', endDate);
+                    } else {
+                        // Ano anterior
+                        const prevYear = parseInt(filters.year) - 1;
+                        console.log('🗓️ Carregando período anterior (ano):', prevYear);
+                        query = query.gte('data', `${prevYear}-01-01`);
+                        query = query.lte('data', `${prevYear}-12-31`);
+                    }
+                }
+                
+                const { data: previousData, error } = await query;
+                
+                if (error) {
+                    console.error('❌ Erro ao carregar período anterior:', error);
+                    return [];
+                }
+                
+                console.log('📊 Dados do período anterior carregados:', previousData?.length || 0);
+                return previousData || [];
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar dados do período anterior:', error);
+                return [];
+            }
+        }
+
         // Calcular métricas dos dados
-        function calculateMetrics(resultados) {
+        function calculateMetrics(resultados, filters, previousPeriodData = []) {
+            console.log('📊 Calculando métricas com filtros:', filters);
+            console.log('📊 Dados recebidos já filtrados:', resultados?.length || 0);
+            console.log('📊 Dados período anterior:', previousPeriodData?.length || 0);
+            
+            // 🔧 CORREÇÃO CRÍTICA: Os dados já vêm filtrados da query, não filtrar novamente
+            // Usar os dados diretamente como período selecionado
+            const selectedPeriod = resultados || [];
+            const previousPeriod = previousPeriodData || [];
+            
+            console.log('📅 Período selecionado (dados já filtrados):', {
+                total: selectedPeriod.length,
+                filters: filters,
+                amostra: selectedPeriod.slice(0, 3)
+            });
+            
+            // Filtros para esta semana (sempre atual para contexto)
             const now = new Date();
-            const currentMonth = now.getMonth() + 1;
-            const currentYear = now.getFullYear();
-            
-            // Filtros para este mês
-            const thisMonth = resultados.filter(r => {
-                const data = new Date(r.data);
-                return data.getMonth() + 1 === currentMonth && data.getFullYear() === currentYear;
-            });
-            
-            // Filtros para mês anterior
-            const lastMonth = resultados.filter(r => {
-                const data = new Date(r.data);
-                const lastMonthNum = currentMonth === 1 ? 12 : currentMonth - 1;
-                const lastMonthYear = currentMonth === 1 ? currentYear - 1 : currentYear;
-                return data.getMonth() + 1 === lastMonthNum && data.getFullYear() === lastMonthYear;
-            });
-            
-            // Filtros para esta semana
             const today = new Date();
             const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
             const endOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 6));
             
-            const thisWeek = resultados.filter(r => {
+            const thisWeek = selectedPeriod.filter(r => {
                 const data = new Date(r.data);
                 return data >= startOfWeek && data <= endOfWeek;
             });
-            
-            // Calcular totais
-            const totalAtendimentos = thisMonth.length;
-            const totalFaturamento = thisMonth.reduce((sum, r) => sum + (parseFloat(r.valor) || 0), 0);
-            const clientesUnicos = new Set(thisMonth.map(r => r.cliente)).size;
-            const atendimentosSemana = thisWeek.length;
-            
-            // Calcular comparações com mês anterior
-            const lastMonthAtendimentos = lastMonth.length;
-            const lastMonthFaturamento = lastMonth.reduce((sum, r) => sum + (parseFloat(r.valor) || 0), 0);
-            const lastMonthClientes = new Set(lastMonth.map(r => r.cliente)).size;
             
             // Semana anterior
             const lastWeekStart = new Date(startOfWeek);
@@ -1722,24 +1277,48 @@
             const lastWeekEnd = new Date(endOfWeek);
             lastWeekEnd.setDate(lastWeekEnd.getDate() - 7);
             
-            const lastWeek = resultados.filter(r => {
+            const lastWeek = selectedPeriod.filter(r => {
                 const data = new Date(r.data);
                 return data >= lastWeekStart && data <= lastWeekEnd;
             });
+            
+            // Calcular totais do período selecionado (dados já filtrados)
+            const totalAtendimentos = selectedPeriod.length;
+            const totalFaturamento = selectedPeriod.reduce((sum, r) => sum + (parseFloat(r.valor) || 0), 0);
+            const clientesUnicos = new Set(selectedPeriod.map(r => r.cliente).filter(c => c)).size;
+            const atendimentosSemana = thisWeek.length;
+            
+            // Calcular comparações com período anterior
+            const previousAtendimentos = previousPeriod.length;
+            const previousFaturamento = previousPeriod.reduce((sum, r) => sum + (parseFloat(r.valor) || 0), 0);
+            const previousClientes = new Set(previousPeriod.map(r => r.cliente).filter(c => c)).size;
             const lastWeekAtendimentos = lastWeek.length;
+            
+            console.log('📈 Métricas calculadas (SEM dupla filtragem):', {
+                periodo: filters?.month ? `${filters.month}/${filters.year}` : filters.year,
+                atendimentos: totalAtendimentos,
+                faturamento: totalFaturamento,
+                clientes: clientesUnicos,
+                semana: atendimentosSemana,
+                comparacao: {
+                    atendimentos: previousAtendimentos,
+                    faturamento: previousFaturamento,
+                    clientes: previousClientes
+                }
+            });
             
             return {
                 atendimentos: {
                     total: totalAtendimentos,
-                    comparison: calculatePercentageChange(totalAtendimentos, lastMonthAtendimentos)
+                    comparison: calculatePercentageChange(totalAtendimentos, previousAtendimentos)
                 },
                 faturamento: {
                     total: totalFaturamento,
-                    comparison: calculatePercentageChange(totalFaturamento, lastMonthFaturamento)
+                    comparison: calculatePercentageChange(totalFaturamento, previousFaturamento)
                 },
                 clientes: {
                     total: clientesUnicos,
-                    comparison: calculatePercentageChange(clientesUnicos, lastMonthClientes)
+                    comparison: calculatePercentageChange(clientesUnicos, previousClientes)
                 },
                 semana: {
                     total: atendimentosSemana,
@@ -1989,7 +1568,7 @@
                 const table = document.getElementById(id);
                 if (table) {
                     const tbody = table.querySelector('tbody');
-                    if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">Selecione uma unidade para ver os dados</td></tr>';
+                    if (tbody) tbody.innerHTML = '<tr><td colspan="5" class="table-empty-message">Selecione uma unidade para ver os dados</td></tr>';
                 }
             });
         }
@@ -2004,6 +1583,231 @@
         window.viewClientDetails = function(clientName) {
             console.log('👁️ Visualizando detalhes do cliente:', clientName);
             // TODO: Implementar modal de detalhes do cliente
+        };
+
+        // 🔧 NOVA: Função para debug dos filtros de mês do Dashboard
+        window.debugDashboardMonthFilter = function(testMonth, testYear) {
+            console.log('🔍 === DEBUG FILTRO DE MÊS DO DASHBOARD ===');
+            
+            const unitSelect = document.getElementById('unitSelect');
+            const selectedUnit = unitSelect?.value;
+            
+            if (!selectedUnit) {
+                console.error('❌ Nenhuma unidade selecionada');
+                return;
+            }
+            
+            console.log('🏢 Unidade selecionada:', selectedUnit);
+            
+            // Simular filtros
+            const testFilters = {
+                month: testMonth || '6', // Junho como exemplo
+                year: testYear || '2025'
+            };
+            
+            console.log('📅 Testando filtros:', testFilters);
+            
+            // Testar a query manualmente
+            loadMainMetrics(selectedUnit, testFilters).then(() => {
+                console.log('✅ Teste de filtro concluído');
+            }).catch(error => {
+                console.error('❌ Erro no teste:', error);
+            });
+        };
+
+        // 🔧 NOVA: Função para verificar dados brutos por mês
+        window.checkRawDataByMonth = async function(unitId, month, year) {
+            console.log('🔍 === VERIFICANDO DADOS BRUTOS ===');
+            
+            const unitSelect = document.getElementById('unitSelect');
+            const selectedUnit = unitId || unitSelect?.value;
+            
+            if (!selectedUnit) {
+                console.error('❌ Nenhuma unidade selecionada');
+                return;
+            }
+            
+            try {
+                // Query sem filtros de data
+                const { data: allData, error: allError } = await supabase
+                    .from('resultados')
+                    .select('*')
+                    .eq('unit_id', selectedUnit);
+                
+                if (allError) throw allError;
+                
+                console.log('📊 Total de registros na unidade:', allData?.length || 0);
+                
+                // Agrupar por mês/ano
+                const groupedByMonth = {};
+                allData?.forEach(record => {
+                    const date = new Date(record.data);
+                    const key = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+                    
+                    if (!groupedByMonth[key]) {
+                        groupedByMonth[key] = [];
+                    }
+                    groupedByMonth[key].push(record);
+                });
+                
+                console.log('📅 Dados por mês/ano:', Object.keys(groupedByMonth).sort().map(key => ({
+                    periodo: key,
+                    registros: groupedByMonth[key].length,
+                    valores: groupedByMonth[key].reduce((sum, r) => sum + (parseFloat(r.valor) || 0), 0)
+                })));
+                
+                // Testar filtro específico se fornecido
+                if (month && year) {
+                    const testMonth = month.toString().padStart(2, '0');
+                    const startDate = `${year}-${testMonth}-01`;
+                    const lastDay = new Date(year, month, 0).getDate();
+                    const endDate = `${year}-${testMonth}-${lastDay.toString().padStart(2, '0')}`;
+                    
+                    const { data: filteredData, error: filterError } = await supabase
+                        .from('resultados')
+                        .select('*')
+                        .eq('unit_id', selectedUnit)
+                        .gte('data', startDate)
+                        .lte('data', endDate);
+                    
+                    if (filterError) throw filterError;
+                    
+                    console.log(`🎯 Dados filtrados para ${testMonth}/${year}:`, {
+                        query: { startDate, endDate },
+                        resultados: filteredData?.length || 0,
+                        registros: filteredData?.slice(0, 3)
+                    });
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro ao verificar dados brutos:', error);
+            }
+        };
+
+        // 🔧 NOVA: Função para testar contagem atual vs filtrada
+        window.testCurrentCounting = async function() {
+            console.log('🔍 === TESTE DE CONTAGEM ATUAL ===');
+            
+            const unitSelect = document.getElementById('unitSelect');
+            const selectedUnit = unitSelect?.value;
+            
+            if (!selectedUnit) {
+                console.error('❌ Nenhuma unidade selecionada');
+                return;
+            }
+            
+            // Obter filtros atuais
+            const filters = getDashboardFilters();
+            console.log('🔍 Filtros atuais:', filters);
+            
+            try {
+                // Simular a mesma query da função loadMainMetrics
+                let query = supabase
+                    .from('resultados')
+                    .select('*')
+                    .eq('unit_id', selectedUnit);
+                
+                if (filters.year) {
+                    if (filters.month) {
+                        const month = filters.month.padStart(2, '0');
+                        const startDate = `${filters.year}-${month}-01`;
+                        const lastDay = new Date(filters.year, parseInt(filters.month), 0).getDate();
+                        const endDate = `${filters.year}-${month}-${lastDay.toString().padStart(2, '0')}`;
+                        
+                        console.log('🗓️ Query com filtro de mês:', { startDate, endDate });
+                        query = query.gte('data', startDate).lte('data', endDate);
+                    } else {
+                        console.log('🗓️ Query com filtro de ano:', filters.year);
+                        query = query.gte('data', `${filters.year}-01-01`);
+                        query = query.lte('data', `${filters.year}-12-31`);
+                    }
+                }
+                
+                const { data: queryResults, error } = await query;
+                
+                if (error) throw error;
+                
+                console.log('📊 Resultados da query:', {
+                    total: queryResults?.length || 0,
+                    amostra: queryResults?.slice(0, 5).map(r => ({ data: r.data, valor: r.valor, cliente: r.cliente }))
+                });
+                
+                // Comparar com valor mostrado na interface
+                const totalAtendimentosElement = document.getElementById('total-atendimentos');
+                const valorInterface = totalAtendimentosElement?.textContent;
+                
+                console.log('🔍 Comparação:', {
+                    queryResult: queryResults?.length || 0,
+                    interfaceValue: valorInterface,
+                    saoIguais: (queryResults?.length || 0).toString() === valorInterface
+                });
+                
+                if ((queryResults?.length || 0).toString() !== valorInterface) {
+                    console.warn('⚠️ DISCREPÂNCIA ENCONTRADA! A interface não está mostrando o valor correto.');
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro no teste:', error);
+            }
+        };
+
+        // 🔧 NOVA: Função para testar inserção no banco
+        window.testDatabaseInsert = async function() {
+            console.log('🧪 === TESTE DE INSERÇÃO NO BANCO ===');
+            
+            if (!currentUser) {
+                console.error('❌ Usuário não logado');
+                return;
+            }
+            
+            const selectedUnit = getSelectedUnit();
+            if (!selectedUnit) {
+                console.error('❌ Nenhuma unidade selecionada');
+                return;
+            }
+            
+            const testRecord = {
+                data: '2025-01-15',
+                horario: '10:00',
+                valor: 100.50,
+                servico: 'Teste de serviço',
+                cliente: 'Cliente Teste',
+                profissional: 'Profissional Teste',
+                user_id: currentUser.id,
+                unit_id: selectedUnit.id,
+                status: 'TESTE'
+            };
+            
+            console.log('📤 Tentando inserir registro de teste:', testRecord);
+            
+            try {
+                const { data, error } = await supabase
+                    .from('resultados')
+                    .insert([testRecord]);
+                
+                if (error) {
+                    console.error('❌ Erro na inserção:', error);
+                    console.error('💡 Possíveis causas:');
+                    console.error('  - RLS (Row Level Security) bloqueando');
+                    console.error('  - Políticas de segurança restritivas'); 
+                    console.error('  - Campos obrigatórios faltando');
+                    console.error('  - Triggers rejeitando dados');
+                } else {
+                    console.log('✅ Registro de teste inserido com sucesso:', data);
+                    
+                    // Deletar o registro de teste
+                    await supabase
+                        .from('resultados')
+                        .delete()
+                        .eq('status', 'TESTE')
+                        .eq('user_id', currentUser.id);
+                    
+                    console.log('🗑️ Registro de teste removido');
+                }
+                
+            } catch (err) {
+                console.error('❌ Erro inesperado:', err);
+            }
         };
 
         function initializeClientes() {
@@ -2032,6 +1836,53 @@
         }
 
         // === SISTEMA DE AUTENTICAÇÃO ===
+        
+        // 🧪 FUNÇÃO DE TESTE - Criar usuário padrão se não existir
+        async function createDefaultUserIfNeeded() {
+            try {
+                console.log('🔍 Verificando se existem usuários no sistema...');
+                
+                const { data: users, error } = await supabase
+                    .from('users')
+                    .select('id')
+                    .limit(1);
+
+                if (error) {
+                    console.error('❌ Erro ao verificar usuários:', error);
+                    return;
+                }
+
+                if (!users || users.length === 0) {
+                    console.log('⚠️ Nenhum usuário encontrado. Criando usuário padrão...');
+                    
+                    // Criar usuário padrão
+                    const defaultPassword = 'admin123';
+                    const hashedPassword = await hashPassword(defaultPassword);
+                    
+                    const { data: newUser, error: createError } = await supabase
+                        .from('users')
+                        .insert({
+                            email: 'admin@dromeflow.com',
+                            password: hashedPassword,
+                            role_id: 1 // Super admin
+                        })
+                        .select()
+                        .single();
+
+                    if (createError) {
+                        console.error('❌ Erro ao criar usuário padrão:', createError);
+                    } else {
+                        console.log('✅ Usuário padrão criado com sucesso!');
+                        console.log('📧 Email: admin@dromeflow.com');
+                        console.log('🔐 Senha: admin123');
+                    }
+                } else {
+                    console.log('✅ Usuários existentes encontrados no sistema');
+                }
+            } catch (error) {
+                console.error('❌ Erro na verificação de usuários:', error);
+            }
+        }
         
         // Função para fazer hash da senha (simulação simples - em produção use bcrypt)
         async function hashPassword(password) {
@@ -2357,29 +2208,66 @@
             }
         }
 
+        // Função auxiliar para fechar modal de login
+        function closeLoginModal() {
+            console.log('🔒 Fechando modal de login...');
+            const loginOverlay = document.getElementById('loginOverlay');
+            const body = document.body;
+            
+            if (loginOverlay) {
+                loginOverlay.style.display = 'none';
+                loginOverlay.classList.add('hidden');
+                body.classList.remove('login-active'); // Remove classe do body
+                console.log('✅ Modal de login fechado com sucesso');
+            } else {
+                console.error('❌ Elemento loginOverlay não encontrado');
+            }
+        }
+
+        // Função auxiliar para abrir modal de login
+        function openLoginModal() {
+            console.log('🔓 Abrindo modal de login...');
+            const loginOverlay = document.getElementById('loginOverlay');
+            const body = document.body;
+            
+            if (loginOverlay) {
+                loginOverlay.style.display = 'flex';
+                loginOverlay.classList.remove('hidden');
+                body.classList.add('login-active'); // Adiciona classe ao body
+                console.log('✅ Modal de login aberto com sucesso');
+            } else {
+                console.error('❌ Elemento loginOverlay não encontrado');
+            }
+        }
+
         // Função para verificar autenticação
         async function checkAuth() {
-            const loginOverlay = document.getElementById('loginOverlay');
+            console.log('🔐 Verificando autenticação...');
             const savedUser = localStorage.getItem('dromeflow_user');
+            
+            console.log('💾 Usuário salvo no localStorage:', !!savedUser);
             
             if (savedUser) {
                 try {
                     const userData = JSON.parse(savedUser);
-                    console.log('👤 Usuário salvo encontrado:', userData.email);
+                    console.log('👤 Dados do usuário encontrados:', userData.email);
                     
                     // Carregar dados completos do usuário
+                    console.log('🔄 Carregando dados completos...');
                     await loadUserData(userData.id);
                     
-                    loginOverlay.style.display = 'none';
+                    console.log('✅ Dados carregados, fechando modal de login');
+                    closeLoginModal();
                     updateUserInterface();
                     return true;
                 } catch (error) {
-                    console.error('Erro ao carregar dados salvos:', error);
+                    console.error('❌ Erro ao carregar dados salvos:', error);
                     localStorage.removeItem('dromeflow_user');
                 }
             }
             
-            loginOverlay.style.display = 'flex';
+            console.log('🔓 Nenhum usuário autenticado, exibindo modal de login');
+            openLoginModal();
             return false;
         }
 
@@ -2594,6 +2482,9 @@
 
             // Atualizar sidebar baseado nas permissões
             updateSidebarForUser();
+            
+            // ✅ CORREÇÃO: Popular dropdown de unidades
+            populateUnitSelect();
         }
 
         // Função para atualizar a sidebar baseada nas permissões do usuário
@@ -2612,9 +2503,9 @@
             if (!availableModules || availableModules.length === 0) {
                 console.warn('⚠️ Nenhum módulo disponível para exibir');
                 sidebarNav.innerHTML = `
-                    <div class="nav-item" style="padding: 1rem; text-align: center; color: var(--text-secondary);">
-                        <i class="fas fa-info-circle" style="margin-bottom: 0.5rem; font-size: 1.5rem;"></i>
-                        <p style="margin: 0; font-size: 0.9rem;">Nenhum módulo ativo disponível</p>
+                    <div class="nav-item empty-state-nav">
+                        <i class="fas fa-info-circle empty-state-icon"></i>
+                        <p class="empty-state-text">Nenhum módulo ativo disponível</p>
                         <small>Ative módulos no banco de dados</small>
                     </div>
                 `;
@@ -2636,13 +2527,44 @@
             // Configurar event listeners para os novos menus
             setupDynamicMenuListeners();
 
-            // Ativar dashboard por padrão se disponível
-            const dashboardModule = availableModules.find(m => m.name === 'dashboard');
-            if (dashboardModule) {
-                const dashboardLink = document.querySelector('[data-module="dashboard"]');
-                if (dashboardLink) {
-                    dashboardLink.classList.add('active');
-                    loadModuleContent('dashboard');
+            // Direcionar para módulo inicial baseado no role do usuário
+            let initialModule = 'dashboard'; // Padrão para todos
+            
+            // Super Admin sempre vai para gestão-sistema
+            if (userRole?.name === 'super_admin') {
+                const gestaoModule = availableModules.find(m => m.name === 'gestao-sistema');
+                if (gestaoModule) {
+                    initialModule = 'gestao-sistema';
+                    console.log('🔥 Super Admin detectado - direcionando para Gestão do Sistema');
+                } else {
+                    console.warn('⚠️ Módulo gestao-sistema não encontrado para Super Admin');
+                }
+            } else {
+                console.log('👤 Usuário regular - direcionando para Dashboard');
+            }
+            
+            // Carregar módulo inicial se disponível
+            const targetModule = availableModules.find(m => m.name === initialModule);
+            if (targetModule) {
+                const targetLink = document.querySelector(`[data-module="${initialModule}"]`);
+                if (targetLink) {
+                    targetLink.classList.add('active');
+                    loadModuleContent(initialModule);
+                    console.log(`✅ Módulo inicial carregado: ${initialModule}`);
+                } else {
+                    console.warn(`⚠️ Link não encontrado para módulo: ${initialModule}`);
+                }
+            } else {
+                console.warn(`⚠️ Módulo inicial não disponível: ${initialModule}`);
+                // Fallback para o primeiro módulo disponível
+                if (availableModules.length > 0) {
+                    const firstModule = availableModules[0];
+                    const firstLink = document.querySelector(`[data-module="${firstModule.name}"]`);
+                    if (firstLink) {
+                        firstLink.classList.add('active');
+                        loadModuleContent(firstModule.name);
+                        console.log(`✅ Carregado primeiro módulo disponível: ${firstModule.name}`);
+                    }
                 }
             }
 
@@ -2682,7 +2604,53 @@
             const moduleSubModules = subModules.filter(sub => sub.parent_module === module.id);
             const hasSubModules = moduleSubModules.length > 0;
 
-            if (hasSubModules) {
+            // Special handling for dashboard module
+            if (module.name === 'dashboard') {
+                navItem.innerHTML = `
+                    <a href="#" class="nav-link" data-menu="dashboard">
+                        <i class="nav-icon ${module.icon}"></i>
+                        <span class="nav-text">${module.display_name}</span>
+                        <i class="nav-arrow fas fa-chevron-right"></i>
+                    </a>
+                    <div class="submenu" id="submenu-dashboard">
+                        <div class="submenu-item">
+                            <a href="#" class="submenu-link" data-submenu="geral">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Geral</span>
+                            </a>
+                        </div>
+                        <div class="submenu-item">
+                            <a href="#" class="submenu-link" data-submenu="clientes">
+                                <i class="fas fa-users"></i>
+                                <span>Clientes</span>
+                            </a>
+                        </div>
+                    </div>
+                `;
+            } else if (module.name === 'gestao-sistema') {
+                // Special handling for gestao-sistema module
+                navItem.innerHTML = `
+                    <a href="#" class="nav-link" data-menu="gestao-sistema">
+                        <i class="nav-icon ${module.icon}"></i>
+                        <span class="nav-text">${module.display_name}</span>
+                        <i class="nav-arrow fas fa-chevron-right"></i>
+                    </a>
+                    <div class="submenu" id="submenu-gestao-sistema">
+                        <div class="submenu-item">
+                            <a href="#" class="submenu-link" data-submenu="unidades">
+                                <i class="fas fa-building"></i>
+                                <span>Unidades</span>
+                            </a>
+                        </div>
+                        <div class="submenu-item">
+                            <a href="#" class="submenu-link" data-submenu="administradores">
+                                <i class="fas fa-user-shield"></i>
+                                <span>Administradores</span>
+                            </a>
+                        </div>
+                    </div>
+                `;
+            } else if (hasSubModules) {
                 // Criar menu com submódulos
                 navItem.innerHTML = `
                     <a href="#" class="nav-link" data-menu="${module.name}">
@@ -2719,7 +2687,7 @@
         // Função para configurar event listeners dos menus dinamicamente
         function setupDynamicMenuListeners() {
             // Remover listeners antigos se existirem
-            document.querySelectorAll('.nav-link[data-menu], .nav-link[data-module], .submenu-link[data-module]').forEach(element => {
+            document.querySelectorAll('.nav-link[data-menu], .nav-link[data-module], .submenu-link[data-module], .submenu-link[data-submenu]').forEach(element => {
                 element.replaceWith(element.cloneNode(true));
             });
 
@@ -2735,7 +2703,7 @@
                         
                         // Fechar todos os outros submenus
                         document.querySelectorAll('.nav-link').forEach(l => {
-                            l.classList.remove('expanded');
+                            l.classList.remove('expanded', 'active');
                         });
                         document.querySelectorAll('.submenu').forEach(s => {
                             s.classList.remove('expanded');
@@ -2743,9 +2711,95 @@
                         
                         // Toggle do submenu atual
                         if (!isExpanded) {
-                            link.classList.add('expanded');
+                            link.classList.add('expanded', 'active'); // 🔧 Adicionar 'active' também
                             submenu.classList.add('expanded');
+                            
+                            // Para dashboard, carregar módulo e submenu padrão
+                            if (menuId === 'dashboard') {
+                                loadModuleContent('dashboard').then(() => {
+                                    // Ativar submenu padrão (Geral) após carregamento
+                                    setTimeout(() => {
+                                        loadDashboardSubmenu('geral');
+                                        const geralLink = document.querySelector('[data-submenu="geral"]');
+                                        if (geralLink) {
+                                            geralLink.classList.add('active');
+                                        }
+                                    }, 100);
+                                }).catch(error => {
+                                    console.error('❌ Erro ao carregar dashboard:', error);
+                                });
+                            } else if (menuId === 'gestao-sistema') {
+                                loadModuleContent('gestao-sistema').then(() => {
+                                    // Ativar submenu padrão (Unidades) após carregamento
+                                    setTimeout(() => {
+                                        loadGestaoSistemaSubmenu('unidades');
+                                        const unidadesLink = document.querySelector('[data-submenu="unidades"]');
+                                        if (unidadesLink) {
+                                            unidadesLink.classList.add('active');
+                                        }
+                                    }, 100);
+                                }).catch(error => {
+                                    console.error('❌ Erro ao carregar gestão do sistema:', error);
+                                });
+                            }
                         }
+                    }
+                });
+            });
+
+            // Configurar listeners para submenus do dashboard e gestão do sistema
+            document.querySelectorAll('[data-submenu]').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const submenu = link.dataset.submenu;
+                    
+                    console.log('🎯 Submenu clicado:', submenu);
+                    
+                    // Remover active de todos os submenus
+                    document.querySelectorAll('[data-submenu]').forEach(l => {
+                        l.classList.remove('active');
+                    });
+                    
+                    // Adicionar active ao submenu clicado
+                    link.classList.add('active');
+                    
+                    // 🔧 CORREÇÃO: Identificar o módulo pai pelo container do submenu
+                    const submenuContainer = link.closest('.submenu');
+                    let activeMenu = null;
+                    
+                    if (submenuContainer) {
+                        if (submenuContainer.id === 'submenu-dashboard') {
+                            activeMenu = 'dashboard';
+                        } else if (submenuContainer.id === 'submenu-gestao-sistema') {
+                            activeMenu = 'gestao-sistema';
+                        }
+                    }
+                    
+                    console.log('🔍 Módulo identificado:', activeMenu, 'para submenu:', submenu);
+                    
+                    // Carregar submenu baseado no módulo identificado
+                    if (activeMenu === 'dashboard') {
+                        // Verificar se módulo dashboard está carregado
+                        if (!document.querySelector('#dashboard-geral, #dashboard-clientes')) {
+                            console.log('📦 Carregando módulo dashboard...');
+                            loadModuleContent('dashboard').then(() => {
+                                setTimeout(() => loadDashboardSubmenu(submenu), 200);
+                            });
+                        } else {
+                            loadDashboardSubmenu(submenu);
+                        }
+                    } else if (activeMenu === 'gestao-sistema') {
+                        // Verificar se módulo gestao-sistema está carregado
+                        if (!document.querySelector('#gestao-unidades, #gestao-administradores')) {
+                            console.log('📦 Carregando módulo gestão do sistema...');
+                            loadModuleContent('gestao-sistema').then(() => {
+                                setTimeout(() => loadGestaoSistemaSubmenu(submenu), 200);
+                            });
+                        } else {
+                            loadGestaoSistemaSubmenu(submenu);
+                        }
+                    } else {
+                        console.error('❌ Não foi possível identificar o módulo pai para o submenu:', submenu);
                     }
                 });
             });
@@ -2807,65 +2861,133 @@
 
         // Event listeners do formulário de login
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎯 DOM carregado, configurando sistema de login...');
+            
             const loginForm = document.getElementById('loginForm');
             const errorMessage = document.getElementById('errorMessage');
             const successMessage = document.getElementById('successMessage');
             const loginBtn = document.getElementById('loginBtn');
+            const loginOverlay = document.getElementById('loginOverlay');
+
+            // Verificar se elementos existem
+            console.log('🔍 Verificando elementos do DOM:');
+            console.log('- loginForm:', !!loginForm);
+            console.log('- errorMessage:', !!errorMessage);
+            console.log('- successMessage:', !!successMessage);
+            console.log('- loginBtn:', !!loginBtn);
+            console.log('- loginOverlay:', !!loginOverlay);
+
+            if (!loginForm) {
+                console.error('❌ Formulário de login não encontrado!');
+                return;
+            }
 
             loginForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
+                console.log('📝 Formulário de login submetido');
                 
                 // Limpar mensagens
-                errorMessage.style.display = 'none';
-                successMessage.style.display = 'none';
+                if (errorMessage) errorMessage.style.display = 'none';
+                if (successMessage) successMessage.style.display = 'none';
                 
                 // Obter dados do formulário
                 const email = document.getElementById('email').value.trim();
                 const password = document.getElementById('password').value;
 
+                console.log('📧 Email:', email);
+                console.log('🔐 Senha fornecida:', password ? 'Sim' : 'Não');
+
                 if (!email || !password) {
-                    errorMessage.textContent = 'Por favor, preencha todos os campos';
-                    errorMessage.style.display = 'block';
+                    console.warn('⚠️ Campos obrigatórios não preenchidos');
+                    if (errorMessage) {
+                        errorMessage.textContent = 'Por favor, preencha todos os campos';
+                        errorMessage.style.display = 'block';
+                    }
                     return;
                 }
 
                 // Mostrar loading
-                loginBtn.disabled = true;
-                loginBtn.innerHTML = '<span class="loading-spinner"></span>Entrando...';
+                if (loginBtn) {
+                    loginBtn.disabled = true;
+                    loginBtn.innerHTML = '<span class="loading-spinner"></span>Entrando...';
+                }
 
                 try {
+                    console.log('🔄 Iniciando processo de login...');
                     const result = await performLogin(email, password);
                     
-                    console.log('Resultado do login:', result);
+                    console.log('📊 Resultado do login:', result);
                     
                     if (result.success) {
-                        successMessage.textContent = 'Login realizado com sucesso!';
-                        successMessage.style.display = 'block';
+                        console.log('✅ Login bem-sucedido!');
+                        if (successMessage) {
+                            successMessage.textContent = 'Login realizado com sucesso!';
+                            successMessage.style.display = 'block';
+                        }
                         
-                        // Fechar modal após sucesso
+                        // ✅ CORRIGIR: Fechar modal usando função auxiliar
+                        closeLoginModal();
+                        
+                        // Atualizar interface do usuário
+                        console.log('🔄 Atualizando interface...');
+                        updateUserInterface();
+                        
+                        // Limpar formulário
+                        if (loginForm) {
+                            loginForm.reset();
+                        }
+                        
+                        // Carregar dashboard como módulo padrão
                         setTimeout(() => {
-                            document.getElementById('loginOverlay').style.display = 'none';
-                            updateUserInterface();
-                        }, 1000);
+                            if (availableModules?.some(m => m.name === 'dashboard')) {
+                                console.log('📊 Carregando dashboard como módulo padrão...');
+                                loadModuleContent('dashboard');
+                            } else {
+                                console.log('⚠️ Dashboard não disponível nos módulos:', availableModules?.map(m => m.name));
+                            }
+                        }, 300);
                         
                     } else {
-                        errorMessage.textContent = result.error || 'Erro ao realizar login';
-                        errorMessage.style.display = 'block';
-                        console.error('Erro de login:', result.error);
+                        console.error('❌ Falha no login:', result.error);
+                        if (errorMessage) {
+                            errorMessage.textContent = result.error || 'Erro ao realizar login';
+                            errorMessage.style.display = 'block';
+                        }
                     }
                     
                 } catch (error) {
-                    console.error('Erro inesperado:', error);
-                    errorMessage.textContent = 'Erro inesperado. Tente novamente.';
-                    errorMessage.style.display = 'block';
+                    console.error('💥 Erro inesperado no login:', error);
+                    if (errorMessage) {
+                        errorMessage.textContent = 'Erro inesperado. Tente novamente.';
+                        errorMessage.style.display = 'block';
+                    }
                 } finally {
-                    loginBtn.disabled = false;
-                    loginBtn.innerHTML = 'Entrar';
+                    if (loginBtn) {
+                        loginBtn.disabled = false;
+                        loginBtn.innerHTML = 'Entrar';
+                    }
                 }
             });
 
             // Verificar autenticação ao carregar a página
-            checkAuth();
+            console.log('🔍 Verificando autenticação existente...');
+            
+            // Criar usuário padrão se necessário (apenas para desenvolvimento)
+            createDefaultUserIfNeeded();
+            
+            // Verificar autenticação e exibir modal se necessário
+            checkAuth().then(isAuthenticated => {
+                if (!isAuthenticated) {
+                    console.log('❗ Usuário não autenticado, garantindo que modal esteja visível');
+                    // Garantir que o modal esteja visível
+                    setTimeout(() => {
+                        const loginOverlay = document.getElementById('loginOverlay');
+                        if (loginOverlay && loginOverlay.style.display !== 'flex') {
+                            openLoginModal();
+                        }
+                    }, 100);
+                }
+            });
         });
 
         // Gerenciamento de tema
@@ -3110,65 +3232,72 @@
                 
                 pageTitle.textContent = moduleNames[module] || 'Dashboard';
                 
+                // Limpar submenu se não for dashboard
+                clearHeaderSubmenu();
+                
                 // Aqui você pode carregar o conteúdo do módulo via AJAX
                 loadModuleContent(module);
             });
         });
 
         function loadModuleContent(module) {
-            // Verificar se usuário tem permissão para acessar o módulo
-            if (!canAccessModule(module)) {
-                console.warn(`⚠️ Usuário não tem permissão para acessar o módulo: ${module}`);
-                
-                const contentArea = document.getElementById('contentArea');
-                contentArea.innerHTML = `
-                    <div style="text-align: center; padding: 4rem 2rem;">
-                        <i class="fas fa-lock" style="font-size: 3rem; color: var(--danger-color); margin-bottom: 1rem;"></i>
-                        <h2 style="color: var(--text-primary); margin-bottom: 1rem;">Acesso Negado</h2>
-                        <p style="color: var(--text-secondary); margin-bottom: 2rem;">
-                            Você não tem permissão para acessar este módulo.
-                        </p>
-                        <button onclick="loadModuleContent('dashboard')" 
-                                style="background: var(--accent-primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: var(--border-radius); cursor: pointer; font-weight: 500;"
-                                onmouseover="this.style.transform='translateY(-2px)'"
-                                onmouseout="this.style.transform='translateY(0)'">
-                            <i class="fas fa-home"></i> Voltar ao Dashboard
-                        </button>
-                    </div>
-                `;
-                return;
-            }
+            return new Promise((resolve, reject) => {
+                // Verificar se usuário tem permissão para acessar o módulo
+                if (!canAccessModule(module)) {
+                    console.warn(`⚠️ Usuário não tem permissão para acessar o módulo: ${module}`);
+                    
+                    const contentArea = document.getElementById('contentArea');
+                    contentArea.innerHTML = `
+                        <div class="access-denied-container">
+                            <i class="fas fa-lock access-denied-icon"></i>
+                            <h2 class="access-denied-title">Acesso Negado</h2>
+                            <p class="access-denied-message">
+                                Você não tem permissão para acessar este módulo.
+                            </p>
+                            <button onclick="loadModuleContent('dashboard')" class="access-denied-button">
+                                <i class="fas fa-home"></i> Voltar ao Dashboard
+                            </button>
+                        </div>
+                    `;
+                    reject(new Error('Acesso negado'));
+                    return;
+                }
 
-            const contentArea = document.getElementById('contentArea');
-            
-            // Verificar se o template já está em cache
-            if (templateCache.has(module)) {
-                console.log(`📦 Carregando "${module}" do cache`);
-                contentArea.innerHTML = templateCache.get(module);
+                const contentArea = document.getElementById('contentArea');
                 
-                // Enviar dados para módulo em cache
-                setTimeout(() => {
-                    sendModuleInitData(module);
-                }, 100);
-                
-                // Disparar evento de módulo carregado
-                const event = new CustomEvent('moduleLoaded', {
-                    detail: { 
-                        module: module,
-                        fromCache: true,
-                        timestamp: new Date().toISOString(),
-                        permissions: availableModules.find(m => m.name === module)?.permissions
-                    }
-                });
-                document.dispatchEvent(event);
-                return;
-            }
+                // Verificar se o template já está em cache
+                if (templateCache.has(module)) {
+                    console.log(`📦 Carregando "${module}" do cache`);
+                    contentArea.innerHTML = templateCache.get(module);
+                    
+                    // Enviar dados para módulo em cache
+                    setTimeout(() => {
+                        sendModuleInitData(module);
+                    }, 100);
+                    
+                    // Disparar evento de módulo carregado
+                    const event = new CustomEvent('moduleLoaded', {
+                        detail: { 
+                            module: module,
+                            fromCache: true,
+                            timestamp: new Date().toISOString(),
+                            permissions: availableModules.find(m => m.name === module)?.permissions
+                        }
+                    });
+                    document.dispatchEvent(event);
+                    
+                    // Resolver Promise após módulo estar pronto
+                    setTimeout(() => {
+                        resolve();
+                    }, 150);
+                    return;
+                }
             
             // Mostrar loading
             contentArea.innerHTML = `
-                <div style="text-align: center; padding: 4rem 2rem;">
-                    <i class="fas fa-spinner fa-spin" style="font-size: 3rem; color: var(--accent-primary); margin-bottom: 1rem;"></i>
-                    <p style="color: var(--text-secondary);">Carregando módulo...</p>
+                <div class="loading-container">
+                    <i class="fas fa-spinner fa-spin loading-icon"></i>
+                    <p class="loading-text">Carregando módulo...</p>
                 </div>
             `;
             
@@ -3187,15 +3316,16 @@
             
             if (!templatePath) {
                 contentArea.innerHTML = `
-                    <div style="text-align: center; padding: 4rem 2rem;">
-                        <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--warning-color); margin-bottom: 1rem;"></i>
-                        <h2 style="color: var(--text-primary); margin-bottom: 1rem;">Módulo não encontrado</h2>
-                        <p style="color: var(--text-secondary);">O módulo "${module}" não foi encontrado.</p>
-                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 1rem;">
+                    <div class="module-not-found-container">
+                        <i class="fas fa-exclamation-circle module-not-found-icon"></i>
+                        <h2 class="module-not-found-title">Módulo não encontrado</h2>
+                        <p class="module-not-found-text">O módulo "${module}" não foi encontrado.</p>
+                        <p class="module-not-found-list">
                             Módulos disponíveis: ${Object.keys(templatePaths).join(', ')}
                         </p>
                     </div>
                 `;
+                reject(new Error(`Módulo "${module}" não encontrado`));
                 return;
             }
             
@@ -3256,36 +3386,37 @@
                     document.dispatchEvent(event);
                     
                     console.log(`✅ Módulo "${module}" carregado com sucesso`);
+                    
+                    // Resolver Promise após módulo estar pronto
+                    setTimeout(() => {
+                        resolve();
+                    }, 150);
                 })
                 .catch(error => {
                     console.error('❌ Erro ao carregar template:', error);
                     contentArea.innerHTML = `
-                        <div style="text-align: center; padding: 4rem 2rem;">
-                            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--danger-color); margin-bottom: 1rem;"></i>
-                            <h2 style="color: var(--text-primary); margin-bottom: 1rem;">Erro ao carregar módulo</h2>
-                            <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                        <div class="module-error-container">
+                            <i class="fas fa-exclamation-triangle module-error-icon"></i>
+                            <h2 class="module-error-title">Erro ao carregar módulo</h2>
+                            <p class="module-error-text">
                                 Não foi possível carregar o template: <strong>${templatePath}</strong>
                             </p>
-                            <p style="color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.9rem;">
+                            <p class="module-error-details">
                                 Erro: ${error.message}
                             </p>
-                            <div style="display: flex; gap: 1rem; justify-content: center;">
-                                <button onclick="loadModuleContent('${module}')" 
-                                        style="background: var(--accent-primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: var(--border-radius); cursor: pointer; font-weight: 500; transition: all var(--transition-fast);"
-                                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='var(--shadow-md)'"
-                                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                            <div class="module-error-actions">
+                                <button onclick="loadModuleContent('${module}')" class="module-retry-button">
                                     <i class="fas fa-redo"></i> Tentar novamente
                                 </button>
-                                <button onclick="loadModuleContent('dashboard')" 
-                                        style="background: var(--text-secondary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: var(--border-radius); cursor: pointer; font-weight: 500; transition: all var(--transition-fast);"
-                                        onmouseover="this.style.background='var(--text-primary)'"
-                                        onmouseout="this.style.background='var(--text-secondary)'">
+                                <button onclick="loadModuleContent('dashboard')" class="module-home-button">
                                     <i class="fas fa-home"></i> Voltar ao Dashboard
                                 </button>
                             </div>
                         </div>
                     `;
+                    reject(error);
                 });
+            }); // Fechar Promise
         }
 
         // Função para enviar dados do usuário para módulos carregados
@@ -3354,7 +3485,7 @@
         }
 
         // Função de logout ATUALIZADA
-        function logout() {
+        async function logout() {
             if (confirm('Tem certeza que deseja sair?')) {
                 // Mostrar loading
                 const logoutBtn = document.getElementById('logoutBtn');
@@ -3363,9 +3494,15 @@
                 logoutBtn.disabled = true;
                 
                 try {
+                    // ✅ MELHORADO: Fazer logout do Supabase
+                    await supabase.auth.signOut();
+                    
                     // Limpar dados do usuário
                     currentUser = null;
                     userUnits = [];
+                    userRole = null;
+                    availableModules = [];
+                    unitModules = [];
                     
                     // Limpar localStorage
                     localStorage.removeItem('dromeflow_user');
@@ -3373,36 +3510,72 @@
                     // Limpar cache de templates
                     templateCache.clear();
                     
-                    // Mostrar modal de login novamente
-                    document.getElementById('loginOverlay').style.display = 'flex';
+                    // Resetar interface ANTES de mostrar modal
+                    const contentArea = document.getElementById('contentArea');
+                    if (contentArea) {
+                        contentArea.innerHTML = `
+                            <div class="welcome-container">
+                                <div class="welcome-icon">
+                                    <i class="fas fa-chart-pie"></i>
+                                </div>
+                                <h2 class="welcome-title">
+                                    Bem-vindo ao DromeFlow
+                                </h2>
+                                <p class="welcome-description">
+                                    Faça login para acessar o sistema de gestão completo.
+                                </p>
+                            </div>
+                        `;
+                    }
+                    
+                    // Resetar sidebar
+                    const sidebarNav = document.querySelector('.sidebar-nav');
+                    if (sidebarNav) {
+                        sidebarNav.innerHTML = `
+                            <div class="nav-item empty-state-nav">
+                                <i class="fas fa-lock empty-state-icon"></i>
+                                <p class="empty-state-text">Faça login para ver os módulos</p>
+                            </div>
+                        `;
+                    }
+                    
+                    // Resetar informações do usuário
+                    const userAvatar = document.querySelector('.user-avatar');
+                    const userName = document.querySelector('.user-name');
+                    const userRoleElement = document.querySelector('.user-role');
+                    
+                    if (userAvatar) userAvatar.textContent = 'U';
+                    if (userName) userName.textContent = 'Usuário';
+                    if (userRoleElement) userRoleElement.textContent = 'Faça login';
                     
                     // Limpar formulário de login
-                    document.getElementById('loginForm').reset();
-                    document.getElementById('errorMessage').style.display = 'none';
-                    document.getElementById('successMessage').style.display = 'none';
+                    const loginForm = document.getElementById('loginForm');
+                    const errorMessage = document.getElementById('errorMessage');
+                    const successMessage = document.getElementById('successMessage');
                     
-                    // Resetar interface
-                    document.getElementById('contentArea').innerHTML = `
-                        <div style="text-align: center; padding: 4rem 2rem;">
-                            <i class="fas fa-chart-pie" style="font-size: 4rem; color: var(--accent-primary); margin-bottom: 2rem;"></i>
-                            <h2 style="font-size: 2rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">
-                                Bem-vindo ao DromeFlow
-                            </h2>
-                            <p style="font-size: 1.1rem; color: var(--text-secondary); max-width: 600px; margin: 0 auto;">
-                                Faça login para acessar o sistema de gestão completo.
-                            </p>
-                        </div>
-                    `;
+                    if (loginForm) loginForm.reset();
+                    if (errorMessage) errorMessage.style.display = 'none';
+                    if (successMessage) successMessage.style.display = 'none';
+                    
+                    // Mostrar modal de login usando função auxiliar
+                    openLoginModal();
                     
                     // Remover active dos links
                     document.querySelectorAll('.nav-link, .submenu-link').forEach(l => {
                         l.classList.remove('active');
                     });
                     
-                    // Resetar título
-                    document.getElementById('pageTitle').textContent = 'DromeFlow';
+                    // ✅ MELHORADO: Limpar dados da interface
+                    const unitSelect = document.getElementById('unitSelect');
+                    if (unitSelect) {
+                        unitSelect.innerHTML = '<option value="">Selecione uma unidade</option>';
+                    }
                     
-                    console.log('Logout realizado com sucesso');
+                    // Resetar título
+                    const pageTitle = document.getElementById('pageTitle');
+                    if (pageTitle) pageTitle.textContent = 'DromeFlow';
+                    
+                    console.log('✅ Logout realizado com sucesso');
                     
                 } catch (error) {
                     console.error('Erro no logout:', error);
@@ -4009,8 +4182,8 @@
                     records_count: records.length
                 });
 
-                // Mapear os dados para a estrutura da tabela resultados
-                const mappedRecords = records.map(record => {
+                // 🔧 CORREÇÃO: Mapeamento mais rigoroso para a estrutura da tabela
+                const mappedRecords = records.map((record, index) => {
                     // Converter datas para formato ISO se necessário
                     let dataFormatted = null;
                     if (record.DATA) {
@@ -4023,7 +4196,7 @@
                     }
 
                     let cadastroFormatted = null;
-                    if (record.CADASTRO) {
+                    if (record.CADASTRO && record.CADASTRO.trim() !== '') {
                         if (record.CADASTRO.includes('-')) {
                             cadastroFormatted = record.CADASTRO;
                         } else if (record.CADASTRO.includes('/')) {
@@ -4032,42 +4205,79 @@
                         }
                     }
 
-                    return {
-                        // Campos mapeados da planilha (usar os nomes da estrutura do banco)
+                    // 🔧 CORREÇÃO: Garantir que valores numéricos sejam válidos
+                    const valor = parseFloat(record.VALOR) || 0;
+                    const repasse = parseFloat(record.REPASSE) || 0;
+
+                    const mappedRecord = {
+                        // Campos de data
                         data: dataFormatted,
-                        horario: record.HORARIO || null,
-                        valor: record.VALOR || 0,
-                        servico: record.SERVIÇO || null,
-                        tipo: record.TIPO || null,
-                        periodo: record.PERÍODO || null,
-                        cliente: record.CLIENTE || null,
-                        profissional: record.PROFISSIONAL || null,
-                        endereco: record.ENDEREÇO || null,
-                        dia: record.DIA || null,
-                        repasse: record.REPASSE || 0,
-                        whatscliente: record.whatscliente || null,
-                        cupom: record.CUPOM || null,
-                        origem: record.ORIGEM || null,
-                        atendimento_id: record.ATENDIMENTO_ID || null,
-                        is_divisao: record.IS_DIVISAO || 'NAO',
                         cadastro: cadastroFormatted,
+                        
+                        // Campos de texto (limitar tamanho se necessário)
+                        horario: record.HORARIO ? record.HORARIO.toString().substring(0, 255) : null,
+                        servico: record.SERVIÇO ? record.SERVIÇO.toString().substring(0, 255) : null,
+                        tipo: record.TIPO ? record.TIPO.toString().substring(0, 255) : null,
+                        periodo: record.PERÍODO ? record.PERÍODO.toString().substring(0, 255) : null,
+                        cliente: record.CLIENTE ? record.CLIENTE.toString().substring(0, 255) : null,
+                        profissional: record.PROFISSIONAL ? record.PROFISSIONAL.toString().substring(0, 255) : null,
+                        endereco: record.ENDEREÇO ? record.ENDEREÇO.toString().substring(0, 500) : null,
+                        dia: record.DIA ? record.DIA.toString().substring(0, 255) : null,
+                        whatscliente: record.whatscliente ? record.whatscliente.toString().substring(0, 255) : null,
+                        cupom: record.CUPOM ? record.CUPOM.toString().substring(0, 255) : null,
+                        origem: record.ORIGEM ? record.ORIGEM.toString().substring(0, 255) : null,
+                        atendimento_id: record.ATENDIMENTO_ID ? record.ATENDIMENTO_ID.toString().substring(0, 255) : null,
+                        is_divisao: record.IS_DIVISAO ? record.IS_DIVISAO.toString().substring(0, 10) : 'NAO',
+                        
+                        // Campos numéricos - garantir que são números válidos
+                        valor: !isNaN(valor) ? valor : 0,
+                        repasse: !isNaN(repasse) ? repasse : 0,
                         
                         // Campos obrigatórios do sistema
                         user_id: currentUser.id,
                         unit_id: selectedUnit.id,
                         
-                        // Campos opcionais (podem ser preenchidos posteriormente)
+                        // Campos opcionais com valores padrão
                         acao: null,
                         horas: null,
                         motivo: null,
                         acomp: null,
-                        status: 'ATIVO', // Status padrão
+                        status: 'ATIVO',
                         pos: null,
                         observacao: null
                     };
+
+                    // 🔧 LOG detalhado para debug
+                    if (index < 3) {
+                        console.log(`📋 Registro ${index + 1} mapeado:`, {
+                            original_data: record.DATA,
+                            formatted_data: mappedRecord.data,
+                            cliente: mappedRecord.cliente,
+                            valor: mappedRecord.valor,
+                            user_id: mappedRecord.user_id,
+                            unit_id: mappedRecord.unit_id
+                        });
+                    }
+
+                    return mappedRecord;
                 });
 
-                console.log('📋 Amostra de dados mapeados:', mappedRecords.slice(0, 2));
+                console.log('� Dados mapeados:', {
+                    total: mappedRecords.length,
+                    amostra: mappedRecords.slice(0, 2),
+                    unit_id: selectedUnit.id,
+                    user_id: currentUser.id
+                });
+
+                // 🔧 NOVA: Validação antes do insert
+                const invalidRecords = mappedRecords.filter(record => 
+                    !record.user_id || !record.unit_id || !record.data
+                );
+
+                if (invalidRecords.length > 0) {
+                    console.error('❌ Registros inválidos encontrados:', invalidRecords.slice(0, 3));
+                    throw new Error(`${invalidRecords.length} registros têm dados obrigatórios faltando`);
+                }
 
                 // Deletar registros do mesmo mês/ano antes de inserir (se houver dados com data)
                 if (mappedRecords.length > 0 && mappedRecords[0].data) {
@@ -4078,6 +4288,8 @@
                         showUploadStatus('Removendo dados anteriores do mesmo período...', 'info');
                         
                         try {
+                            console.log(`🗑️ Deletando registros de ${mes}/${ano} para unidade ${selectedUnit.id}`);
+                            
                             const { data: deletedData, error: deleteError } = await supabase
                                 .from('resultados')
                                 .delete()
@@ -4085,35 +4297,62 @@
                                 .gte('data', `${ano}-${mes}-01`)
                                 .lte('data', `${ano}-${mes}-31`);
                             
-                            console.log('🗑️ Registros anteriores removidos');
+                            if (deleteError) {
+                                console.warn('⚠️ Aviso ao deletar registros anteriores:', deleteError);
+                            } else {
+                                console.log('✅ Registros anteriores removidos com sucesso');
+                            }
                         } catch (deleteErr) {
-                            console.warn('⚠️ Aviso ao deletar registros anteriores:', deleteErr);
+                            console.warn('⚠️ Erro não crítico ao deletar registros anteriores:', deleteErr);
                         }
                     }
                 }
 
-                // Inserir novos registros
+                // 🔧 CORREÇÃO: Inserir em lotes menores para evitar timeout
                 showUploadStatus('Inserindo novos registros...', 'info');
                 
-                const { data: insertedData, error: insertError } = await supabase
-                    .from('resultados')
-                    .insert(mappedRecords);
+                const BATCH_SIZE = 100; // Inserir 100 registros por vez
+                let insertedCount = 0;
+                
+                for (let i = 0; i < mappedRecords.length; i += BATCH_SIZE) {
+                    const batch = mappedRecords.slice(i, i + BATCH_SIZE);
+                    
+                    console.log(`📤 Inserindo lote ${Math.floor(i/BATCH_SIZE) + 1}/${Math.ceil(mappedRecords.length/BATCH_SIZE)} (${batch.length} registros)`);
+                    
+                    try {
+                        const { data: insertedData, error: insertError } = await supabase
+                            .from('resultados')
+                            .insert(batch);
 
-                if (insertError) {
-                    console.error('❌ Erro no Supabase insert:', insertError);
-                    throw new Error(`Erro ao salvar dados: ${insertError.message}`);
+                        if (insertError) {
+                            console.error('❌ Erro no Supabase insert (lote):', insertError);
+                            console.error('📋 Dados do lote com erro:', batch.slice(0, 2));
+                            throw new Error(`Erro ao salvar lote ${Math.floor(i/BATCH_SIZE) + 1}: ${insertError.message}`);
+                        }
+                        
+                        insertedCount += batch.length;
+                        console.log(`✅ Lote ${Math.floor(i/BATCH_SIZE) + 1} inserido com sucesso (${batch.length} registros)`);
+                        
+                        // Atualizar status do progresso
+                        const progress = Math.round((insertedCount / mappedRecords.length) * 100);
+                        showUploadStatus(`Salvando... ${progress}% (${insertedCount}/${mappedRecords.length})`, 'info');
+                        
+                    } catch (batchError) {
+                        console.error('❌ Erro crítico no lote:', batchError);
+                        throw batchError;
+                    }
                 }
                 
-                console.log('✅ Registros inseridos com sucesso:', insertedData);
+                console.log('✅ Todos os registros inseridos com sucesso:', insertedCount);
 
                 showUploadStatus('Upload concluído com sucesso!', 'success');
-                showNotification(`${records.length} registros salvos com sucesso na unidade ${selectedUnit.name}!`, 'success');
+                showNotification(`${insertedCount} registros salvos com sucesso na unidade ${selectedUnit.name}!`, 'success');
                 
                 // Recarregar dados do dashboard se estiver ativo
                 setTimeout(() => {
                     const currentModule = getCurrentModule();
-                    if (currentModule === 'dashboard' && typeof window.dashboardModule !== 'undefined' && window.dashboardModule.loadDashboardData) {
-                        window.dashboardModule.loadDashboardData();
+                    if (currentModule === 'dashboard' && typeof loadDashboardData === 'function') {
+                        loadDashboardData();
                     }
                     closeUploadModal();
                 }, 2000);
@@ -4122,6 +4361,14 @@
                 console.error('❌ Erro no upload para banco de dados:', error);
                 showUploadStatus(`Erro: ${error.message}`, 'error');
                 showNotification(`Falha ao salvar: ${error.message}`, 'error');
+                
+                // 🔧 LOG adicional para debug
+                console.log('🔍 Debug info:', {
+                    currentUser: currentUser,
+                    selectedUnit: getSelectedUnit(),
+                    recordsCount: records?.length,
+                    supabaseAvailable: !!supabase
+                });
             }
         }
 
@@ -4420,7 +4667,113 @@
                 }
             }
         };
+
+        // 🔧 Função de debug para testar filtros do Dashboard
+        window.debugDashboardFilters = function() {
+            console.log('=== DEBUG FILTROS DASHBOARD ===');
+            
+            const monthFilter = document.getElementById('monthFilter');
+            const yearFilter = document.getElementById('yearFilter');
+            const unitSelect = document.getElementById('unitSelect');
+            
+            console.log('Elementos encontrados:');
+            console.log('- monthFilter:', !!monthFilter, monthFilter?.value);
+            console.log('- yearFilter:', !!yearFilter, yearFilter?.value);
+            console.log('- unitSelect:', !!unitSelect, unitSelect?.value);
+            
+            if (monthFilter) {
+                console.log('Mês selecionado:', {
+                    value: monthFilter.value,
+                    text: monthFilter.selectedOptions[0]?.textContent,
+                    options: Array.from(monthFilter.options).map(o => ({ value: o.value, text: o.textContent }))
+                });
+            }
+            
+            if (yearFilter) {
+                console.log('Ano selecionado:', {
+                    value: yearFilter.value,
+                    text: yearFilter.selectedOptions[0]?.textContent,
+                    options: Array.from(yearFilter.options).map(o => ({ value: o.value, text: o.textContent }))
+                });
+            }
+            
+            // Testar função getDashboardFilters
+            if (typeof getDashboardFilters === 'function') {
+                console.log('Filtros via getDashboardFilters():', getDashboardFilters());
+            } else {
+                console.error('Função getDashboardFilters não encontrada');
+            }
+            
+            // Testar recarregamento
+            console.log('Testando recarregamento...');
+            if (typeof loadDashboardData === 'function') {
+                loadDashboardData();
+            } else {
+                console.error('Função loadDashboardData não encontrada');
+            }
+        };
+
+        // 🔧 Função de teste manual para filtros
+        window.testDashboardFilter = function(month, year) {
+            console.log(`🧪 Testando filtro: mês=${month}, ano=${year}`);
+            
+            const monthFilter = document.getElementById('monthFilter');
+            const yearFilter = document.getElementById('yearFilter');
+            
+            if (monthFilter && month) monthFilter.value = month;
+            if (yearFilter && year) yearFilter.value = year;
+            
+            console.log('Filtros definidos, recarregando...');
+            if (typeof loadDashboardData === 'function') {
+                loadDashboardData();
+            }
+        };
+        
+        // 🔧 FUNÇÃO DEBUG: Testar fluxo de login/logout
+        window.debugLoginLogout = function() {
+            console.log('🔍 === DEBUG LOGIN/LOGOUT ===');
+            console.log('👤 Current User:', currentUser);
+            console.log('🏢 User Units:', userUnits?.length || 0);
+            console.log('🎭 User Role:', userRole);
+            console.log('📋 Available Modules:', availableModules?.length || 0);
+            console.log('💾 LocalStorage User:', localStorage.getItem('dromeflow_user') ? 'EXISTE' : 'VAZIO');
+            console.log('🔓 Login Overlay Display:', document.getElementById('loginOverlay')?.style.display);
+            
+            // Testar elementos da interface
+            const userAvatar = document.querySelector('.user-avatar');
+            const userName = document.querySelector('.user-name');
+            const unitSelect = document.getElementById('unitSelect');
+            
+            console.log('🖼️ User Avatar:', userAvatar?.textContent || 'VAZIO');
+            console.log('👤 User Name:', userName?.textContent || 'VAZIO');
+            console.log('🏢 Unit Select Options:', unitSelect?.options?.length || 0);
+            
+            return {
+                currentUser,
+                userUnits: userUnits?.length || 0,
+                userRole: userRole?.name,
+                availableModules: availableModules?.length || 0,
+                hasLocalStorage: !!localStorage.getItem('dromeflow_user'),
+                loginOverlayVisible: document.getElementById('loginOverlay')?.style.display === 'flex'
+            };
+        };
+        
+        // 🔧 FUNÇÃO DEBUG: Forçar reset completo
+        window.forceResetSystem = function() {
+            console.log('🔄 Forçando reset completo do sistema...');
+            currentUser = null;
+            userUnits = [];
+            userRole = null;
+            availableModules = [];
+            unitModules = [];
+            localStorage.removeItem('dromeflow_user');
+            document.getElementById('loginOverlay').style.display = 'flex';
+            console.log('✅ Reset completo executado');
+        };
     </script>
+    
+    <!-- Script de Validação CSS (apenas em desenvolvimento) -->
+    <script src="js/css-validation.js"></script>
 
 </body>
 </html>

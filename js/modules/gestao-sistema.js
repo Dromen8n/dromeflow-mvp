@@ -37,6 +37,7 @@ window.GestaoSistema = {
         unitModal: null,
         adminModal: null,
         userModal: null,
+        createUserForAdminModal: null,
         
         // Forms
         unitForm: null,
@@ -188,6 +189,7 @@ window.GestaoSistema = {
             unitModal: document.getElementById('unitModal'),
             adminModal: document.getElementById('adminModal'),
             userModal: document.getElementById('userModal'),
+            createUserForAdminModal: document.getElementById('createUserForAdminModal'),
             
             // Forms
             unitForm: document.getElementById('unitForm'),
@@ -2503,119 +2505,1141 @@ window.GestaoSistema = {
      * @param {string} adminId - ID do administrador
      */
     async openAdminCard(adminId) {
+        console.log('[Admin Card] Iniciando carregamento do administrador:', adminId);
+        
+        // 🔧 CORREÇÃO: Determinar tipo de usuário logo no início
+        const currentUserRole = window.userRole?.name || this.currentUser?.role?.name;
+        const isCurrentUserSuperAdmin = currentUserRole === 'super_admin';
+        
+        console.log('[Admin Card] Tipo de usuário detectado:', currentUserRole);
+        console.log('[Admin Card] É Super Admin?', isCurrentUserSuperAdmin);
+        
+        if (!adminId) {
+            console.error('❌ ID do administrador não fornecido');
+            return;
+        }
+        
+        const card = document.getElementById('adminInfoCard');
+        if (!card) {
+            console.error('❌ Elemento adminInfoCard não encontrado');
+            return;
+        }
+
         try {
-            console.log('🔍 Abrindo detalhes do administrador:', adminId);
+            // � CORREÇÃO: Usar display block em vez de classList
+            card.style.display = 'block';
             
+            // Resetar todos os campos para loading
+            const loadingText = 'Carregando...';
+            const adminEmailInfo = document.getElementById('adminEmailInfo');
+            const adminUnitsInfo = document.getElementById('adminUnitsInfo');
+            const adminCreatedAtInfo = document.getElementById('adminCreatedAtInfo');
+            const adminStatusInfo = document.getElementById('adminStatusInfo');
+            
+            if (adminEmailInfo) adminEmailInfo.textContent = loadingText;
+            if (adminUnitsInfo) adminUnitsInfo.textContent = loadingText;
+            if (adminCreatedAtInfo) adminCreatedAtInfo.textContent = loadingText;
+            if (adminStatusInfo) adminStatusInfo.innerHTML = loadingText;
+            
+            const usersList = document.getElementById('adminUsersList');
+            if (usersList) {
+                usersList.innerHTML = `
+                    <div class="loading-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        Carregando dados do administrador...
+                    </div>
+                `;
+            }
+
+            console.log('[Admin Card] Buscando dados básicos do administrador...');
+
             // Verificar se o cliente Supabase está disponível
-            const supabase = this.supabaseClient || this.currentUser?.supabase;
+            const supabase = this.supabaseClient || this.currentUser?.supabase || window.supabase;
             
             if (!supabase) {
                 throw new Error('Cliente Supabase não disponível');
             }
-            
-            // Buscar detalhes do administrador
-            const { data: admins, error } = await supabase
+
+            // 🔧 CORREÇÃO: Query simplificada para dados básicos
+            const { data: admin, error: adminError } = await supabase
                 .from('users')
                 .select(`
-                    *,
-                    roles (
-                        id,
-                        name,
-                        display_name,
-                        level
-                    ),
-                    user_units (
-                        units (
-                            id,
-                            name
-                        )
-                    )
+                    id,
+                    email,
+                    created_at,
+                    role_id
                 `)
                 .eq('id', adminId)
                 .single();
-                
-            if (error) {
-                throw error;
+
+            if (adminError) {
+                console.error('❌ Erro ao carregar dados do administrador:', adminError);
+                throw new Error(`Erro ao buscar administrador: ${adminError.message}`);
             }
-            
-            if (!admins) {
+
+            if (!admin) {
                 throw new Error('Administrador não encontrado');
             }
-            
-            const admin = admins;
-            console.log('✅ Administrador encontrado:', admin);
-            
-            // Preencher dados do administrador no card
-            const cardAdminEmail = document.getElementById('adminEmail');
-            const cardAdminUnits = document.getElementById('adminUnits');
-            const cardAdminCreatedAt = document.getElementById('adminCreatedAt');
-            const cardAdminStatus = document.getElementById('adminStatus');
-            
-            if (cardAdminEmail) {
-                cardAdminEmail.textContent = admin.email || 'N/A';
-            }
-            
-            if (cardAdminUnits) {
-                const units = admin.user_units?.map(uu => uu.units?.name).filter(name => name).join(', ') || 'Nenhuma';
-                cardAdminUnits.textContent = units;
-            }
-            
-            if (cardAdminCreatedAt) {
-                const createdAt = new Date(admin.created_at).toLocaleDateString('pt-BR');
-                cardAdminCreatedAt.textContent = createdAt;
-            }
-            
-            if (cardAdminStatus) {
-                const roleName = admin.roles?.name || 'N/A';
-                const roleDisplayName = admin.roles?.display_name || roleName || 'N/A';
-                
-                let statusHtml = '<span class="badge badge-success">Ativo</span>';
-                
-                if (roleName === 'super_admin') {
-                    statusHtml += ' <span class="badge badge-danger" style="margin-left: 0.5rem;">Super Admin</span>';
-                } else if (roleName === 'admin') {
-                    statusHtml += ' <span class="badge badge-warning" style="margin-left: 0.5rem;">Administrador</span>';
+
+            console.log('[Admin Card] ✅ Dados básicos carregados:', admin);
+
+            // Mostrar/ocultar indicador de Super Admin
+            const superAdminIndicator = document.getElementById('superAdminModeIndicator');
+            if (superAdminIndicator) {
+                if (isCurrentUserSuperAdmin) {
+                    superAdminIndicator.style.display = 'block';
+                } else {
+                    superAdminIndicator.style.display = 'none';
                 }
-                
-                cardAdminStatus.innerHTML = statusHtml;
             }
-            
-            // Carregar usuários vinculados ao administrador
-            await this.loadUsersByAdmin(adminId);
-            
-            // Exibir o card
-            const adminInfoCard = document.getElementById('adminInfoCard');
-            if (adminInfoCard) {
-                adminInfoCard.style.display = 'block';
+
+            // Mostrar/ocultar botão de criar usuário para Super Admin
+            const createUserBtnContainer = document.getElementById('createUserBtnContainer');
+            if (createUserBtnContainer) {
+                if (isCurrentUserSuperAdmin) {
+                    createUserBtnContainer.style.display = 'block';
+                    // Armazenar ID do admin atual para uso no modal
+                    createUserBtnContainer.setAttribute('data-admin-id', adminId);
+                } else {
+                    createUserBtnContainer.style.display = 'none';
+                }
+            }
+
+            // Preencher dados básicos
+            if (adminEmailInfo) adminEmailInfo.textContent = admin.email || 'N/A';
+            if (adminCreatedAtInfo) {
+                adminCreatedAtInfo.textContent = admin.created_at 
+                    ? new Date(admin.created_at).toLocaleDateString('pt-BR')
+                    : 'N/A';
+            }
+            if (adminStatusInfo) {
+                adminStatusInfo.innerHTML = '<span class="badge badge-success">Ativo</span>';
+            }
+
+            console.log('[Admin Card] Buscando unidades do administrador...');
+
+            // Buscar unidades do administrador
+            const { data: adminUnits, error: unitsError } = await supabase
+                .from('user_units')
+                .select(`
+                    unit_id,
+                    units!inner (
+                        id,
+                        name
+                    )
+                `)
+                .eq('user_id', adminId);
+
+            if (unitsError) {
+                console.error('❌ Erro ao carregar unidades:', unitsError);
+                if (adminUnitsInfo) adminUnitsInfo.textContent = 'Erro ao carregar unidades';
+            } else {
+                console.log('[Admin Card] ✅ Unidades carregadas:', adminUnits);
                 
-                // Adicionar botão para fechar o card (se não existir)
-                if (!adminInfoCard.querySelector('.close-btn')) {
-                    const closeBtn = document.createElement('button');
-                    closeBtn.className = 'close-btn';
-                    closeBtn.innerHTML = '<i class="fas fa-times"></i>';
-                    closeBtn.style.position = 'absolute';
-                    closeBtn.style.top = '1rem';
-                    closeBtn.style.right = '1rem';
-                    closeBtn.style.background = 'transparent';
-                    closeBtn.style.border = 'none';
-                    closeBtn.style.fontSize = '1.2rem';
-                    closeBtn.style.cursor = 'pointer';
-                    closeBtn.style.color = 'var(--text-secondary)';
-                    closeBtn.onclick = () => {
-                        adminInfoCard.style.display = 'none';
-                    };
-                    
-                    const infoCard = adminInfoCard.querySelector('.info-card');
-                    if (infoCard) {
-                        infoCard.style.position = 'relative';
-                        infoCard.appendChild(closeBtn);
+                if (adminUnitsInfo) {
+                    if (adminUnits && adminUnits.length > 0) {
+                        const unitNames = adminUnits
+                            .map(uu => uu.units?.name || 'Unidade desconhecida')
+                            .join(', ');
+                        adminUnitsInfo.textContent = unitNames;
+                    } else {
+                        adminUnitsInfo.textContent = 'Nenhuma unidade vinculada';
                     }
                 }
             }
+
+            console.log('[Admin Card] Buscando permissões de módulos...');
+            
+            // Atualizar título da aba baseado no tipo de usuário
+            const tabHeader = document.querySelector('#admin-tab-users .tab-content-header h5');
+            const tabSubtitle = document.querySelector('#admin-tab-users .tab-content-header small');
+            
+            if (isCurrentUserSuperAdmin) {
+                if (tabHeader) tabHeader.textContent = 'Todos os Usuários do Sistema';
+                if (tabSubtitle) tabSubtitle.textContent = 'Visualização completa de usuários e suas permissões (modo Super Admin)';
+            } else {
+                if (tabHeader) tabHeader.textContent = 'Permissões de Módulos Concedidas';
+                if (tabSubtitle) tabSubtitle.textContent = 'Usuários e módulos liberados pelo administrador';
+            }
+            
+            let modulePermissions;
+            let permissionsError;
+            
+            if (isCurrentUserSuperAdmin) {
+                console.log('[Admin Card] Super Admin detectado - carregando TODOS os usuários');
+                
+                // 🔧 CORREÇÃO: Especificar relacionamentos explicitamente para evitar ambiguidade
+                const result = await supabase
+                    .from('user_module_permissions')
+                    .select(`
+                        user_id,
+                        unit_id,
+                        module_id,
+                        granted_at,
+                        granted_by,
+                        users!user_module_permissions_user_id_fkey (
+                            id,
+                            email,
+                            created_at
+                        ),
+                        granted_by_user:users!user_module_permissions_granted_by_fkey (
+                            id,
+                            email
+                        ),
+                        units!inner (
+                            id,
+                            name
+                        ),
+                        modules!inner (
+                            id,
+                            name,
+                            display_name,
+                            icon
+                        )
+                    `)
+                    .order('granted_at', { ascending: false });
+                    
+                modulePermissions = result.data;
+                permissionsError = result.error;
+                
+                console.log('[Admin Card] Query Super Admin - Resultado:', result);
+                console.log('[Admin Card] Permissões encontradas:', modulePermissions?.length || 0);
+                
+            } else {
+                console.log('[Admin Card] Admin regular - carregando apenas usuários criados por:', adminId);
+                
+                // 🔧 CORREÇÃO: Especificar relacionamentos explicitamente para admin regular
+                const result = await supabase
+                    .from('user_module_permissions')
+                    .select(`
+                        user_id,
+                        unit_id,
+                        module_id,
+                        granted_at,
+                        users!user_module_permissions_user_id_fkey (
+                            id,
+                            email,
+                            created_at
+                        ),
+                        units!inner (
+                            id,
+                            name
+                        ),
+                        modules!inner (
+                            id,
+                            name,
+                            display_name,
+                            icon
+                        )
+                    `)
+                    .eq('granted_by', adminId)
+                    .order('granted_at', { ascending: false });
+                    
+                modulePermissions = result.data;
+                permissionsError = result.error;
+                
+                console.log('[Admin Card] Query Admin regular - Resultado:', result);
+                console.log('[Admin Card] Permissões encontradas:', modulePermissions?.length || 0);
+            }
+
+            if (permissionsError) {
+                console.error('❌ Erro ao carregar permissões:', permissionsError);
+                if (usersList) {
+                    usersList.innerHTML = `
+                        <div class="empty-state">
+                            <p style="color: var(--danger-color);">
+                                ❌ Erro ao carregar usuários: ${permissionsError.message}
+                            </p>
+                            <details style="margin-top: 1rem; padding: 1rem; background: var(--bg-tertiary); border-radius: 6px;">
+                                <summary style="cursor: pointer; font-weight: 600;">Detalhes do Erro</summary>
+                                <pre style="margin-top: 0.5rem; white-space: pre-wrap; font-size: 0.8rem;">${JSON.stringify(permissionsError, null, 2)}</pre>
+                            </details>
+                        </div>
+                    `;
+                }
+            } else {
+                console.log('[Admin Card] ✅ Permissões carregadas:', modulePermissions);
+                console.log('[Admin Card] Quantidade de registros:', modulePermissions?.length || 0);
+                
+                // 🔧 DIAGNÓSTICO: Vamos também tentar uma query direta para ver se há dados
+                if (isCurrentUserSuperAdmin) {
+                    console.log('[Admin Card] 🔍 DIAGNÓSTICO: Verificando dados brutos na tabela...');
+                    
+                    // Query simples para verificar se existem dados
+                    const { data: rawData, error: rawError } = await supabase
+                        .from('user_module_permissions')
+                        .select('*')
+                        .limit(10);
+                    
+                    console.log('[Admin Card] 🔍 Dados brutos encontrados:', rawData?.length || 0);
+                    console.log('[Admin Card] 🔍 Primeiros registros:', rawData);
+                    
+                    if (rawError) {
+                        console.error('[Admin Card] 🔍 Erro na query bruta:', rawError);
+                    }
+                    
+                    // Verificar se há usuários na tabela users
+                    const { data: allUsers, error: usersError } = await supabase
+                        .from('users')
+                        .select('id, email, created_at')
+                        .limit(10);
+                        
+                    console.log('[Admin Card] 🔍 Usuários encontrados:', allUsers?.length || 0);
+                    console.log('[Admin Card] 🔍 Usuários:', allUsers);
+                    
+                    // Verificar módulos
+                    const { data: allModules, error: modulesError } = await supabase
+                        .from('modules')
+                        .select('id, name, display_name')
+                        .limit(10);
+                        
+                    console.log('[Admin Card] 🔍 Módulos encontrados:', allModules?.length || 0);
+                    console.log('[Admin Card] 🔍 Módulos:', allModules);
+                    
+                    // Verificar unidades
+                    const { data: allUnits, error: unitsError } = await supabase
+                        .from('units')
+                        .select('id, name')
+                        .limit(10);
+                        
+                    console.log('[Admin Card] 🔍 Unidades encontradas:', allUnits?.length || 0);
+                    console.log('[Admin Card] 🔍 Unidades:', allUnits);
+                }
+                
+                if (usersList) {
+                    if (modulePermissions && modulePermissions.length > 0) {
+                        // Agrupar permissões por usuário
+                        const userPermissionsMap = new Map();
+                        
+                        modulePermissions.forEach(permission => {
+                            const userId = permission.user_id;
+                            
+                            if (!userPermissionsMap.has(userId)) {
+                                userPermissionsMap.set(userId, {
+                                    user: permission.users,
+                                    permissions: []
+                                });
+                            }
+                            
+                            userPermissionsMap.get(userId).permissions.push({
+                                unit: permission.units,
+                                module: permission.modules,
+                                granted_at: permission.granted_at,
+                                granted_by: permission.granted_by || null
+                            });
+                        });
+
+                        // Gerar HTML para cada usuário
+                        usersList.innerHTML = Array.from(userPermissionsMap.entries()).map(([userId, userData]) => {
+                            const user = userData.user;
+                            const permissions = userData.permissions;
+                            
+                            const createdDate = user.created_at 
+                                ? new Date(user.created_at).toLocaleDateString('pt-BR')
+                                : 'N/A';
+                            
+                            // Agrupar permissões por unidade
+                            const unitGroups = new Map();
+                            permissions.forEach(perm => {
+                                const unitId = perm.unit.id;
+                                if (!unitGroups.has(unitId)) {
+                                    unitGroups.set(unitId, {
+                                        unit: perm.unit,
+                                        modules: []
+                                    });
+                                }
+                                unitGroups.get(unitId).modules.push({
+                                    ...perm.module,
+                                    granted_by: perm.granted_by
+                                });
+                            });
+
+                            // Gerar lista de unidades e módulos
+                            const unitsModulesHTML = Array.from(unitGroups.entries()).map(([unitId, unitData]) => {
+                                const unit = unitData.unit;
+                                const modules = unitData.modules;
+                                
+                                const modulesHTML = modules.map(module => {
+                                    // Para Super Admin, mostrar quem concedeu a permissão
+                                    const grantedByInfo = isCurrentUserSuperAdmin && module.granted_by 
+                                        ? `title="Concedido por: ${module.granted_by === adminId ? 'Este Admin' : 'Outro Admin'}"` 
+                                        : '';
+                                    
+                                    const moduleStyle = isCurrentUserSuperAdmin && module.granted_by !== adminId
+                                        ? 'background: var(--info-color); border: 1px solid var(--info-color);'
+                                        : 'background: var(--accent-primary);';
+                                    
+                                    return `<span style="
+                                        display: inline-block;
+                                        ${moduleStyle}
+                                        color: var(--text-on-accent);
+                                        padding: 2px 6px;
+                                        border-radius: 4px;
+                                        font-size: 0.75rem;
+                                        margin: 2px;
+                                        font-weight: 500;
+                                        cursor: ${isCurrentUserSuperAdmin ? 'help' : 'default'};
+                                    " ${grantedByInfo}>
+                                        <i class="${module.icon || 'fas fa-cube'}"></i> ${module.display_name || module.name}
+                                        ${isCurrentUserSuperAdmin && module.granted_by !== adminId ? ' 🔄' : ''}
+                                    </span>`;
+                                }).join('');
+                                
+                                return `
+                                    <div style="margin-bottom: 0.5rem;">
+                                        <div style="font-weight: 600; color: var(--accent-primary); margin-bottom: 4px;">
+                                            📍 ${unit.name}
+                                        </div>
+                                        <div>${modulesHTML}</div>
+                                    </div>
+                                `;
+                            }).join('');
+                            
+                            // Adicionar indicador de origem para Super Admin
+                            const userOriginBadge = isCurrentUserSuperAdmin 
+                                ? `<div style="
+                                    font-size: 0.8rem; 
+                                    color: var(--text-secondary);
+                                    margin-top: 0.25rem;
+                                ">
+                                    ${permissions.some(p => p.granted_by === adminId) 
+                                        ? '✅ Gerenciado por este Admin' 
+                                        : '🔄 Gerenciado por outro Admin'}
+                                </div>`
+                                : '';
+                            
+                            return `
+                                <div style="
+                                    border: 1px solid var(--border-primary);
+                                    border-radius: var(--border-radius);
+                                    margin-bottom: 1rem;
+                                    background: var(--bg-secondary);
+                                    overflow: hidden;
+                                ">
+                                    <!-- Header do Usuário -->
+                                    <div style="
+                                        display: flex;
+                                        justify-content: space-between;
+                                        align-items: center;
+                                        padding: 0.75rem;
+                                        background: var(--bg-tertiary);
+                                        border-bottom: 1px solid var(--border-primary);
+                                    ">
+                                        <div>
+                                            <div style="font-weight: 600; color: var(--text-primary);">
+                                                👤 ${user.email}
+                                            </div>
+                                            <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                                                Usuário Regular
+                                            </div>
+                                            ${userOriginBadge}
+                                        </div>
+                                        <div style="
+                                            text-align: right;
+                                            font-size: 0.8rem;
+                                            color: var(--text-secondary);
+                                        ">
+                                            Criado em:<br>
+                                            <strong>${createdDate}</strong>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Permissões do Usuário -->
+                                    <div style="padding: 0.75rem;">
+                                        <div style="
+                                            font-size: 0.9rem; 
+                                            font-weight: 600; 
+                                            color: var(--text-primary);
+                                            margin-bottom: 0.5rem;
+                                        ">
+                                            🔑 Módulos Liberados:
+                                        </div>
+                                        ${unitsModulesHTML}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                        
+                    } else {
+                        const emptyMessage = isCurrentUserSuperAdmin 
+                            ? 'Nenhum usuário possui permissões de módulo no sistema ainda.'
+                            : 'Nenhuma permissão de módulo foi concedida por este administrador ainda.';
+                            
+                        const emptySubMessage = isCurrentUserSuperAdmin
+                            ? 'Quando administradores liberarem módulos para usuários, eles aparecerão aqui.'
+                            : 'Quando este admin liberar módulos para usuários, eles aparecerão aqui organizados por unidade.';
+                        
+                        // Se for Super Admin e não tiver dados, vamos tentar uma abordagem alternativa
+                        let alternativeDataHTML = '';
+                        
+                        if (isCurrentUserSuperAdmin) {
+                            console.log('[Admin Card] 🔄 Super Admin sem permissões - tentando mostrar todos os usuários...');
+                            
+                            // Buscar todos os usuários do sistema
+                            try {
+                                const { data: allUsersInSystem, error: allUsersError } = await supabase
+                                    .from('users')
+                                    .select(`
+                                        id,
+                                        email,
+                                        created_at,
+                                        roles (
+                                            name,
+                                            display_name
+                                        )
+                                    `)
+                                    .neq('id', adminId) // Excluir o próprio admin
+                                    .order('created_at', { ascending: false });
+                                
+                                if (!allUsersError && allUsersInSystem && allUsersInSystem.length > 0) {
+                                    console.log('[Admin Card] ✅ Encontrados usuários sem permissões:', allUsersInSystem.length);
+                                    
+                                    alternativeDataHTML = `
+                                        <div style="margin-top: 1rem; padding: 1rem; background: var(--warning-color); color: white; border-radius: 6px;">
+                                            <h5 style="margin: 0 0 0.5rem 0;">
+                                                <i class="fas fa-exclamation-triangle"></i>
+                                                Usuários sem Permissões de Módulo
+                                            </h5>
+                                            <p style="margin: 0 0 1rem 0; font-size: 0.9rem;">
+                                                Como Super Admin, você pode ver ${allUsersInSystem.length} usuário(s) no sistema que ainda não possuem permissões de módulo:
+                                            </p>
+                                            ${allUsersInSystem.map(user => `
+                                                <div style="
+                                                    background: rgba(255,255,255,0.2);
+                                                    padding: 0.5rem;
+                                                    border-radius: 4px;
+                                                    margin-bottom: 0.5rem;
+                                                    display: flex;
+                                                    justify-content: space-between;
+                                                    align-items: center;
+                                                ">
+                                                    <div>
+                                                        <strong>${user.email}</strong>
+                                                        <br>
+                                                        <small>${user.roles?.display_name || user.roles?.name || 'Sem role'}</small>
+                                                    </div>
+                                                    <small>${new Date(user.created_at).toLocaleDateString('pt-BR')}</small>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    `;
+                                }
+                            } catch (error) {
+                                console.error('[Admin Card] Erro ao buscar usuários alternativos:', error);
+                            }
+                        }
+                        
+                        usersList.innerHTML = `
+                            <div class="empty-state" style="
+                                text-align: center;
+                                padding: 2rem;
+                                color: var(--text-secondary);
+                                background: var(--bg-tertiary);
+                                border-radius: var(--border-radius);
+                                border: 2px dashed var(--border-primary);
+                            ">
+                                <i class="fas fa-user-shield" style="font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5;"></i>
+                                <p style="margin: 0; font-weight: 500;">
+                                    ${emptyMessage}
+                                </p>
+                                <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem;">
+                                    ${emptySubMessage}
+                                </p>
+                            </div>
+                            ${alternativeDataHTML}
+                        `;
+                    }
+                }
+            }
+
+            console.log('✅ [Admin Card] Carregamento completo!');
+
+        } catch (error) {
+            console.error('❌ [Admin Card] Erro geral:', error);
+            
+            // Mostrar erro na interface
+            const adminEmailInfo = document.getElementById('adminEmailInfo');
+            const adminUnitsInfo = document.getElementById('adminUnitsInfo');
+            const adminCreatedAtInfo = document.getElementById('adminCreatedAtInfo');
+            const adminStatusInfo = document.getElementById('adminStatusInfo');
+            const usersList = document.getElementById('adminUsersList');
+            
+            if (adminEmailInfo) adminEmailInfo.textContent = 'Erro ao carregar';
+            if (adminUnitsInfo) adminUnitsInfo.textContent = 'Erro ao carregar';
+            if (adminCreatedAtInfo) adminCreatedAtInfo.textContent = 'Erro ao carregar';
+            if (adminStatusInfo) {
+                adminStatusInfo.innerHTML = '<span class="badge badge-danger">Erro</span>';
+            }
+            
+            if (usersList) {
+                usersList.innerHTML = `
+                    <div class="empty-state" style="
+                        text-align: center;
+                        padding: 2rem;
+                        color: var(--danger-color);
+                        background: var(--bg-tertiary);
+                        border-radius: var(--border-radius);
+                        border: 2px solid var(--danger-color);
+                    ">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                        <p style="margin: 0; font-weight: 500;">
+                            Erro ao carregar dados do administrador
+                        </p>
+                        <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem;">
+                            ${error.message}
+                        </p>
+                    </div>
+                `;
+            }
+        }
+    },
+
+    /**
+     * Variável para armazenar o ID do administrador atual no contexto do modal
+     */
+    currentAdminForUserCreation: null,
+
+    /**
+     * Abrir modal para criar usuário vinculado ao administrador
+     */
+    openCreateUserForAdmin() {
+        console.log('👤 Abrindo modal para criar usuário para administrador...');
+        
+        // Obter ID do administrador do botão
+        const createUserBtnContainer = document.getElementById('createUserBtnContainer');
+        const adminId = createUserBtnContainer?.getAttribute('data-admin-id');
+        
+        if (!adminId) {
+            this.showError('Erro: ID do administrador não encontrado');
+            return;
+        }
+        
+        // Armazenar administrador atual
+        this.currentAdminForUserCreation = adminId;
+        
+        const modal = document.getElementById('createUserForAdminModal');
+        if (!modal) {
+            this.showError('Modal não encontrado');
+            return;
+        }
+        
+        // Limpar formulário
+        this.resetCreateUserForAdminForm();
+        
+        // Carregar dados do administrador
+        this.loadAdminDataForUserCreation(adminId);
+        
+        // Mostrar modal
+        modal.classList.remove('hidden');
+        modal.classList.add('active');
+        modal.style.display = 'flex';
+        
+        console.log('✅ Modal de criar usuário aberto para admin:', adminId);
+    },
+
+    /**
+     * Fechar modal de criar usuário
+     */
+    closeCreateUserForAdminModal() {
+        const modal = document.getElementById('createUserForAdminModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('active');
+            modal.style.display = 'none';
+        }
+        
+        // Limpar dados
+        this.currentAdminForUserCreation = null;
+        this.resetCreateUserForAdminForm();
+        
+        console.log('✅ Modal de criar usuário fechado');
+    },
+
+    /**
+     * Resetar formulário de criar usuário
+     */
+    resetCreateUserForAdminForm() {
+        const form = document.getElementById('createUserForAdminForm');
+        if (form) {
+            form.reset();
+        }
+        
+        // Limpar campos específicos
+        const emailField = document.getElementById('userForAdminEmail');
+        const passwordField = document.getElementById('userForAdminPassword');
+        
+        if (emailField) emailField.value = '';
+        if (passwordField) passwordField.value = '';
+        
+        // Resetar containers
+        const adminInfo = document.getElementById('adminInfoForUser');
+        const unitsContainer = document.getElementById('adminUnitsForUser');
+        const modulesContainer = document.getElementById('modulesForUserByUnit');
+        
+        if (adminInfo) {
+            adminInfo.innerHTML = 'Carregando informações do administrador...';
+        }
+        
+        if (unitsContainer) {
+            unitsContainer.innerHTML = `
+                <div class="loading-state">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    Carregando unidades do administrador...
+                </div>
+            `;
+        }
+        
+        if (modulesContainer) {
+            modulesContainer.innerHTML = `
+                <p style="color: var(--text-secondary); font-style: italic; padding: 1rem;">
+                    Selecione uma unidade acima para ver os módulos disponíveis.
+                </p>
+            `;
+        }
+    },
+
+    /**
+     * Carregar dados do administrador para criação de usuário
+     */
+    async loadAdminDataForUserCreation(adminId) {
+        try {
+            console.log('📋 Carregando dados do admin para criação de usuário:', adminId);
+            
+            const supabase = this.supabaseClient || this.currentUser?.supabase || window.supabase;
+            if (!supabase) {
+                throw new Error('Cliente Supabase não disponível');
+            }
+            
+            // Buscar dados do administrador
+            const { data: admin, error: adminError } = await supabase
+                .from('users')
+                .select('id, email, created_at')
+                .eq('id', adminId)
+                .single();
+                
+            if (adminError) {
+                throw new Error(`Erro ao buscar administrador: ${adminError.message}`);
+            }
+            
+            // Atualizar info do admin no modal
+            const adminInfo = document.getElementById('adminInfoForUser');
+            if (adminInfo) {
+                adminInfo.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <div style="
+                            width: 40px;
+                            height: 40px;
+                            border-radius: 50%;
+                            background: var(--accent-primary);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: white;
+                            font-weight: 600;
+                        ">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <div>
+                            <div style="font-weight: 600; color: var(--text-primary);">
+                                ${admin.email}
+                            </div>
+                            <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                                Administrador desde ${new Date(admin.created_at).toLocaleDateString('pt-BR')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Carregar unidades do administrador
+            await this.loadAdminUnitsForUserCreation(adminId);
             
         } catch (error) {
-            console.error('❌ Erro ao abrir detalhes do administrador:', error);
-            this.showError('Erro ao abrir detalhes do administrador: ' + error.message);
+            console.error('❌ Erro ao carregar dados do admin:', error);
+            
+            const adminInfo = document.getElementById('adminInfoForUser');
+            if (adminInfo) {
+                adminInfo.innerHTML = `
+                    <div style="color: var(--danger-color); text-align: center; padding: 1rem;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Erro ao carregar dados do administrador: ${error.message}
+                    </div>
+                `;
+            }
+        }
+    },
+
+    /**
+     * Carregar unidades do administrador para seleção
+     */
+    async loadAdminUnitsForUserCreation(adminId) {
+        try {
+            console.log('🏢 Carregando unidades do admin para seleção:', adminId);
+            
+            const supabase = this.supabaseClient || this.currentUser?.supabase || window.supabase;
+            if (!supabase) {
+                throw new Error('Cliente Supabase não disponível');
+            }
+            
+            // Buscar unidades do administrador
+            const { data: adminUnits, error: unitsError } = await supabase
+                .from('user_units')
+                .select(`
+                    unit_id,
+                    units!inner (
+                        id,
+                        name,
+                        is_active
+                    )
+                `)
+                .eq('user_id', adminId);
+                
+            if (unitsError) {
+                throw new Error(`Erro ao buscar unidades: ${unitsError.message}`);
+            }
+            
+            const unitsContainer = document.getElementById('adminUnitsForUser');
+            if (!unitsContainer) return;
+            
+            if (!adminUnits || adminUnits.length === 0) {
+                unitsContainer.innerHTML = `
+                    <div style="color: var(--text-secondary); text-align: center; padding: 1rem;">
+                        <i class="fas fa-info-circle"></i>
+                        Este administrador não possui unidades vinculadas.
+                    </div>
+                `;
+                return;
+            }
+            
+            // Gerar checkboxes das unidades
+            unitsContainer.innerHTML = adminUnits.map(unitData => {
+                const unit = unitData.units;
+                const isActive = unit.is_active;
+                const statusText = isActive ? '' : ' (Inativa)';
+                const disabledAttr = isActive ? '' : 'disabled';
+                
+                return `
+                    <div class="checkbox-item">
+                        <input type="checkbox" 
+                               id="unit_${unit.id}" 
+                               value="${unit.id}" 
+                               ${disabledAttr}
+                               onchange="GestaoSistema.onUnitSelectionChange('${unit.id}', this.checked)">
+                        <label for="unit_${unit.id}" style="color: ${isActive ? 'var(--text-primary)' : 'var(--text-secondary)'};">
+                            <i class="fas fa-building"></i>
+                            ${unit.name}${statusText}
+                        </label>
+                    </div>
+                `;
+            }).join('');
+            
+            console.log('✅ Unidades carregadas:', adminUnits.length);
+            
+        } catch (error) {
+            console.error('❌ Erro ao carregar unidades:', error);
+            
+            const unitsContainer = document.getElementById('adminUnitsForUser');
+            if (unitsContainer) {
+                unitsContainer.innerHTML = `
+                    <div style="color: var(--danger-color); text-align: center; padding: 1rem;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Erro ao carregar unidades: ${error.message}
+                    </div>
+                `;
+            }
+        }
+    },
+
+    /**
+     * Evento de mudança na seleção de unidades
+     */
+    async onUnitSelectionChange(unitId, isChecked) {
+        console.log('🔄 Unidade selecionada/desmarcada:', unitId, isChecked);
+        
+        if (isChecked) {
+            // Carregar módulos da unidade
+            await this.loadModulesForUnit(unitId);
+        } else {
+            // Remover módulos da unidade
+            this.removeModulesForUnit(unitId);
+        }
+    },
+
+    /**
+     * Carregar módulos disponíveis para uma unidade
+     */
+    async loadModulesForUnit(unitId) {
+        try {
+            console.log('🧩 Carregando módulos para unidade:', unitId);
+            
+            const supabase = this.supabaseClient || this.currentUser?.supabase || window.supabase;
+            if (!supabase) {
+                throw new Error('Cliente Supabase não disponível');
+            }
+            
+            // Buscar módulos ativos para a unidade
+            const { data: unitModules, error: modulesError } = await supabase
+                .from('unit_modules')
+                .select(`
+                    module_id,
+                    is_active,
+                    modules!inner (
+                        id,
+                        name,
+                        display_name,
+                        icon
+                    )
+                `)
+                .eq('unit_id', unitId)
+                .eq('is_active', true);
+                
+            if (modulesError) {
+                throw new Error(`Erro ao buscar módulos: ${modulesError.message}`);
+            }
+            
+            // Buscar informações da unidade
+            const { data: unitInfo, error: unitError } = await supabase
+                .from('units')
+                .select('id, name')
+                .eq('id', unitId)
+                .single();
+                
+            if (unitError) {
+                throw new Error(`Erro ao buscar unidade: ${unitError.message}`);
+            }
+            
+            const modulesContainer = document.getElementById('modulesForUserByUnit');
+            if (!modulesContainer) return;
+            
+            // Se for a primeira unidade, limpar mensagem padrão
+            if (modulesContainer.innerHTML.includes('Selecione uma unidade')) {
+                modulesContainer.innerHTML = '';
+            }
+            
+            if (!unitModules || unitModules.length === 0) {
+                // Adicionar mensagem de nenhum módulo disponível
+                const noModulesDiv = document.createElement('div');
+                noModulesDiv.id = `unit-modules-${unitId}`;
+                noModulesDiv.className = 'unit-modules-group';
+                noModulesDiv.innerHTML = `
+                    <div class="unit-title">
+                        <i class="fas fa-building"></i>
+                        ${unitInfo.name}
+                    </div>
+                    <div style="color: var(--text-secondary); font-style: italic;">
+                        Nenhum módulo ativo nesta unidade.
+                    </div>
+                `;
+                modulesContainer.appendChild(noModulesDiv);
+                return;
+            }
+            
+            // Criar grupo de módulos para a unidade
+            const unitModulesDiv = document.createElement('div');
+            unitModulesDiv.id = `unit-modules-${unitId}`;
+            unitModulesDiv.className = 'unit-modules-group';
+            
+            unitModulesDiv.innerHTML = `
+                <div class="unit-title">
+                    <i class="fas fa-building"></i>
+                    ${unitInfo.name}
+                    <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-secondary);">
+                        (${unitModules.length} módulo(s) disponível(is))
+                    </span>
+                </div>
+                <div class="modules-grid">
+                    ${unitModules.map(moduleData => {
+                        const module = moduleData.modules;
+                        return `
+                            <div class="module-checkbox-item">
+                                <input type="checkbox" 
+                                       id="module_${unitId}_${module.id}" 
+                                       value="${module.id}"
+                                       data-unit-id="${unitId}">
+                                <div class="module-info">
+                                    <i class="${module.icon || 'fas fa-cube'}"></i>
+                                    <span>${module.display_name || module.name}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+            
+            modulesContainer.appendChild(unitModulesDiv);
+            
+            console.log('✅ Módulos carregados para unidade:', unitModules.length);
+            
+        } catch (error) {
+            console.error('❌ Erro ao carregar módulos:', error);
+            this.showError('Erro ao carregar módulos: ' + error.message);
+        }
+    },
+
+    /**
+     * Remover módulos de uma unidade da seleção
+     */
+    removeModulesForUnit(unitId) {
+        const unitModulesDiv = document.getElementById(`unit-modules-${unitId}`);
+        if (unitModulesDiv) {
+            unitModulesDiv.remove();
+            
+            // Se não sobrou nenhuma unidade, mostrar mensagem padrão
+            const modulesContainer = document.getElementById('modulesForUserByUnit');
+            if (modulesContainer && modulesContainer.children.length === 0) {
+                modulesContainer.innerHTML = `
+                    <p style="color: var(--text-secondary); font-style: italic; padding: 1rem;">
+                        Selecione uma unidade acima para ver os módulos disponíveis.
+                    </p>
+                `;
+            }
+        }
+    },
+
+    /**
+     * Salvar novo usuário vinculado ao administrador
+     */
+    async saveUserForAdmin() {
+        try {
+            console.log('💾 Salvando usuário para administrador...');
+            
+            if (!this.currentAdminForUserCreation) {
+                throw new Error('Administrador não selecionado');
+            }
+            
+            // Validar campos obrigatórios
+            const emailField = document.getElementById('userForAdminEmail');
+            const passwordField = document.getElementById('userForAdminPassword');
+            
+            if (!emailField?.value?.trim()) {
+                this.showError('Por favor, digite o e-mail do usuário');
+                emailField?.focus();
+                return;
+            }
+            
+            if (!passwordField?.value?.trim()) {
+                this.showError('Por favor, digite a senha do usuário');
+                passwordField?.focus();
+                return;
+            }
+            
+            const email = emailField.value.trim();
+            const password = passwordField.value.trim();
+            
+            // Verificar unidades selecionadas
+            const selectedUnits = [];
+            const unitCheckboxes = document.querySelectorAll('#adminUnitsForUser input[type="checkbox"]:checked');
+            unitCheckboxes.forEach(checkbox => {
+                selectedUnits.push(checkbox.value);
+            });
+            
+            if (selectedUnits.length === 0) {
+                this.showError('Por favor, selecione pelo menos uma unidade para o usuário');
+                return;
+            }
+            
+            // Verificar módulos selecionados
+            const selectedModulePermissions = [];
+            const moduleCheckboxes = document.querySelectorAll('#modulesForUserByUnit input[type="checkbox"]:checked');
+            moduleCheckboxes.forEach(checkbox => {
+                const moduleId = checkbox.value;
+                const unitId = checkbox.dataset.unitId;
+                selectedModulePermissions.push({
+                    unit_id: unitId,
+                    module_id: moduleId
+                });
+            });
+            
+            if (selectedModulePermissions.length === 0) {
+                this.showError('Por favor, selecione pelo menos um módulo para o usuário');
+                return;
+            }
+            
+            const supabase = this.supabaseClient || this.currentUser?.supabase || window.supabase;
+            if (!supabase) {
+                throw new Error('Cliente Supabase não disponível');
+            }
+            
+            // Buscar role de usuário regular
+            const { data: userRole, error: roleError } = await supabase
+                .from('roles')
+                .select('id')
+                .eq('name', 'user')
+                .single();
+                
+            if (roleError) {
+                throw new Error('Erro ao buscar role de usuário: ' + roleError.message);
+            }
+            
+            console.log('👤 Criando usuário...');
+            
+            // Criar usuário
+            const { data: newUser, error: userError } = await supabase
+                .from('users')
+                .insert([{
+                    email: email,
+                    password: password,
+                    role_id: userRole.id
+                }])
+                .select()
+                .single();
+                
+            if (userError) {
+                throw new Error('Erro ao criar usuário: ' + userError.message);
+            }
+            
+            const userId = newUser.id;
+            
+            console.log('🏢 Vinculando usuário às unidades...');
+            
+            // Vincular usuário às unidades
+            const userUnitsData = selectedUnits.map(unitId => ({
+                user_id: userId,
+                unit_id: unitId
+            }));
+            
+            const { error: unitsError } = await supabase
+                .from('user_units')
+                .insert(userUnitsData);
+                
+            if (unitsError) {
+                throw new Error('Erro ao vincular unidades: ' + unitsError.message);
+            }
+            
+            console.log('🧩 Concedendo permissões de módulos...');
+            
+            // Conceder permissões de módulos
+            const modulePermissionsData = selectedModulePermissions.map(permission => ({
+                user_id: userId,
+                unit_id: permission.unit_id,
+                module_id: permission.module_id,
+                granted_by: this.currentAdminForUserCreation,
+                granted_at: new Date().toISOString()
+            }));
+            
+            const { error: permissionsError } = await supabase
+                .from('user_module_permissions')
+                .insert(modulePermissionsData);
+                
+            if (permissionsError) {
+                throw new Error('Erro ao conceder permissões: ' + permissionsError.message);
+            }
+            
+            console.log('✅ Usuário criado com sucesso!');
+            
+            this.showSuccess(`Usuário "${email}" criado com sucesso e vinculado ao administrador!`);
+            
+            // Fechar modal
+            this.closeCreateUserForAdminModal();
+            
+            // Recarregar dados do administrador se o card estiver aberto
+            if (this.currentAdminForUserCreation) {
+                await this.openAdminCard(this.currentAdminForUserCreation);
+            }
+            
+        } catch (error) {
+            console.error('❌ Erro ao salvar usuário:', error);
+            this.showError('Erro ao criar usuário: ' + error.message);
         }
     },
     
@@ -3172,6 +4196,30 @@ function checkRoles() {
         window.GestaoSistema.checkAndCreateRoles();
     } else {
         console.log('❌ Módulo Gestão do Sistema não está carregado');
+    }
+}
+
+// Função para fechar o card do administrador
+function closeAdminCard() {
+    const card = document.getElementById('adminInfoCard');
+    if (card) {
+        card.style.display = 'none';
+    }
+}
+
+// Funções globais para compatibilidade
+function openAdminCard(adminId) {
+    window.GestaoSistema.openAdminCard(adminId);
+}
+
+function editAdmin(adminId) {
+    window.GestaoSistema.editAdmin(adminId);
+}
+
+function closeAdminCard() {
+    const card = document.getElementById('adminInfoCard');
+    if (card) {
+        card.style.display = 'none';
     }
 }
 
