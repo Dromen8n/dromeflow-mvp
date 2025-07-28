@@ -1,0 +1,4426 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DromeFlow - Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <!-- Biblioteca XLSX para processamento de planilhas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        /* --- Variáveis de Tema --- */
+        :root {
+            /* Cores de Acento e Ação (Tema Claro) */
+            --accent-primary: #ac009e;   /* Magenta (Nova paleta) */
+            --accent-secondary: #fd24a0; /* Pink (Nova paleta) */
+            
+            /* Cores Semânticas */
+            --success-color: #70e000;    /* Verde (Nova paleta) */
+            --warning-color: #f88f0b;    /* Laranja (Nova paleta) */
+            --danger-color: #ef476f;     /* Vermelho (Mantido) */
+            --info-color: #00d5ff;       /* Ciano (Nova paleta) */
+
+            /* Paleta de Cores Adicional (para gráficos, etc.) */
+            --brand-magenta: #ccff33;
+            --brand-pink: #fd24a0;
+            --brand-lime: #ccff33;
+            --brand-green: #70e000;
+            --brand-cyan: #00d5ff;
+            --brand-orange: #f88f0b;
+            --brand-dark-blue: #010d32;
+            --brand-snow-white: #fffafa;
+            
+            /* Tema Claro (Padrão) - Melhorado */
+            --bg-primary: #f8fafc;        /* Fundo principal - azul-cinza muito claro */
+            --bg-secondary: #ffffff;      /* Fundo de cards, modais (branco puro) */
+            --bg-tertiary: #f1f5f9;       /* Fundo de elementos aninhados - azul-cinza claro */
+            
+            --text-primary: #1e293b;      /* Texto principal - azul-cinza escuro moderno */
+            --text-secondary: #64748b;    /* Texto secundário - cinza-azul médio */
+            --text-accent: var(--accent-primary);
+            --text-on-accent: #ffffff;    /* Texto sobre fundos de acento */
+            
+            --border-primary: #e2e8f0;      /* Bordas principais - azul-cinza suave */
+            --border-secondary: #cbd5e1;    /* Bordas de inputs - azul-cinza médio */
+            --border-accent: var(--accent-primary);
+            
+            /* Estados de hover e foco - Light Mode */
+            --hover-overlay: rgba(148, 163, 184, 0.05);
+            --focus-ring: rgba(172, 0, 158, 0.15);
+
+            /* Sombras - Melhoradas */
+            --shadow-color-rgb: 30, 41, 59;
+            --shadow-sm: 0 1px 3px rgba(var(--shadow-color-rgb), 0.05);
+            --shadow-md: 0 2px 8px rgba(var(--shadow-color-rgb), 0.08);
+            --shadow-lg: 0 4px 16px rgba(var(--shadow-color-rgb), 0.12);
+
+            /* Outras variáveis de layout */
+            --border-radius: 10px;
+            --border-radius-lg: 16px;
+            --transition-fast: 0.13s cubic-bezier(0.4,0,0.2,1);
+            --transition-normal: 0.22s cubic-bezier(0.4,0,0.2,1);
+            --transition-slow: 0.33s cubic-bezier(0.4,0,0.2,1);
+            --spacing-xs: 0.375rem;
+            --spacing-sm: 0.75rem;
+            --spacing-md: 1.25rem;
+            --spacing-lg: 2rem;
+            --spacing-xl: 2.5rem;
+
+            /* Adicionado para usar em rgba() */
+            --brand-cyan-rgb: 0, 213, 255;
+            --success-color-rgb: 112, 224, 0;
+            --warning-color-rgb: 248, 143, 11;
+            --accent-secondary-rgb: 253, 36, 160;
+            --brand-magenta-rgb: 172, 0, 158;
+            --brand-green-rgb: 112, 224, 0;
+            --brand-orange-rgb: 248, 143, 11;
+        }
+
+        /* Tema Escuro - Para modo dark */
+        body.dark {
+            /* Cores de Acento e Ação */
+            --accent-primary: #fd24a0;   /* Pink (Nova paleta) */
+            --accent-secondary: #ac009e; /* Magenta (Nova paleta) */
+
+            /* Tema Escuro */
+            --bg-primary: #010d32;      /* Fundo principal (Novo azul da marca) */
+            --bg-secondary: #0b1a4c;    /* Fundo de cards (tom mais claro do novo azul) */
+            --bg-tertiary: #11225a;     /* Fundo de elementos aninhados, hovers */
+            
+            --text-primary: #fffafa;     /* Texto principal (Novo branco 'snow') */
+            --text-secondary: #a3aed0;   /* Mantido para bom contraste */
+            
+            --border-primary: rgba(255, 255, 255, 0.1);
+            --border-secondary: rgba(255, 255, 255, 0.18);
+            
+            /* Sombras */
+            --shadow-color-rgb: 0, 0, 0;
+            --shadow-sm: 0 1px 4px rgba(var(--shadow-color-rgb), 0.18);
+            --shadow-md: 0 3px 10px rgba(var(--shadow-color-rgb), 0.22);
+            --shadow-lg: 0 6px 20px rgba(var(--shadow-color-rgb), 0.25);
+        }
+
+        /* Estilos globais */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Classe utilitária para ocultar elementos */
+        .hidden {
+            display: none !important;
+        }
+
+        body {
+            background-color: var(--bg-primary) !important;
+            color: var(--text-primary) !important;
+            min-height: 100vh;
+            font-family: 'Inter', 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+            font-size: 1.05rem;
+            line-height: 1.7;
+            letter-spacing: 0.01em;
+            transition: background-color var(--transition-normal), color var(--transition-normal);
+            overflow-x: hidden;
+        }
+
+        /* --- Layout Geral --- */
+        .app-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+        }
+
+        /* === HEADER GLOBAL === */
+        .global-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-primary);
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            gap: 1.5rem;
+            z-index: 1000;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .logo-brand {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-text {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-main {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .header-title {
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .header-center {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        .filters-container {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            background: var(--bg-secondary);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-primary);
+        }
+
+        .filter-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* === LAYOUT PRINCIPAL === */
+        .main-layout {
+            display: flex;
+            height: calc(100vh - 80px);
+            margin-top: 80px;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 280px;
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border-primary);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            transition: width var(--transition-normal), background-color var(--transition-normal);
+            flex-shrink: 0;
+            z-index: 40;
+        }
+
+        .sidebar.collapsed {
+            width: 72px;
+        }
+
+        /* Menu de Navegação */
+        .sidebar-nav {
+            flex: 1;
+            padding: var(--spacing-lg) 0;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* Indicador visual sutil para áreas clicáveis */
+        .sidebar-nav::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            transition: background-color var(--transition-fast);
+            border-radius: 4px;
+            margin: 0 var(--spacing-sm);
+        }
+
+        .sidebar-nav:hover::after {
+            background-color: rgba(var(--accent-primary-rgb, 172, 0, 158), 0.02);
+        }
+
+        /* Feedback visual para clique ativo */
+        .sidebar-nav.click-active::after {
+            background-color: rgba(var(--accent-primary-rgb, 172, 0, 158), 0.05);
+        }
+
+        /* Remover cursor pointer dos elementos interativos para evitar confusão */
+        .sidebar-nav .nav-link,
+        .sidebar-nav .submenu-link,
+        .sidebar-nav .nav-item,
+        .sidebar-nav .submenu-item {
+            cursor: pointer;
+            position: relative;
+            z-index: 1;
+        }
+
+        .nav-item {
+            margin: 0 var(--spacing-md) var(--spacing-xs) var(--spacing-md);
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-md);
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            transition: all var(--transition-fast);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .nav-link:hover {
+            color: var(--text-primary);
+            background-color: var(--hover-overlay);
+        }
+
+        .nav-link.active {
+            color: var(--accent-primary);
+            background-color: rgba(var(--brand-magenta-rgb), 0.1);
+        }
+
+        .nav-icon {
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .nav-text {
+            white-space: nowrap;
+            transition: opacity var(--transition-normal);
+        }
+
+        .sidebar.collapsed .nav-text {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        .nav-arrow {
+            margin-left: auto;
+            font-size: 0.8rem;
+            transition: transform var(--transition-fast);
+        }
+
+        .nav-link.expanded .nav-arrow {
+            transform: rotate(90deg);
+        }
+
+        .sidebar.collapsed .nav-arrow {
+            display: none;
+        }
+
+        /* Submenus */
+        .submenu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height var(--transition-normal);
+            margin-left: calc(var(--spacing-md) + 20px + var(--spacing-sm));
+        }
+
+        .submenu.expanded {
+            max-height: 200px;
+        }
+
+        .sidebar.collapsed .submenu {
+            display: none;
+        }
+
+        .submenu-item {
+            margin: var(--spacing-xs) 0;
+        }
+
+        .submenu-link {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-xs) var(--spacing-md);
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: var(--border-radius);
+            font-weight: 400;
+            font-size: 0.95rem;
+            transition: all var(--transition-fast);
+        }
+
+        .submenu-link:hover {
+            color: var(--text-primary);
+            background-color: var(--hover-overlay);
+        }
+
+        .submenu-link.active {
+            color: var(--accent-primary);
+            background-color: rgba(var(--brand-magenta-rgb), 0.08);
+        }
+
+        /* Footer da Sidebar */
+        .sidebar-footer {
+            padding: var(--spacing-md);
+            border-top: 1px solid var(--border-primary);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm);
+            border-radius: var(--border-radius);
+            transition: background-color var(--transition-fast);
+        }
+
+        .user-info:hover {
+            background-color: var(--hover-overlay);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-on-accent);
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .user-details {
+            flex: 1;
+            min-width: 0;
+            transition: opacity var(--transition-normal);
+        }
+
+        .sidebar.collapsed .user-details {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-role {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* --- Conteúdo Principal --- */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-color: var(--bg-primary);
+        }
+
+        /* Cabeçalho Principal */
+        .main-header {
+            padding: 0 var(--spacing-lg);
+            border-bottom: 1px solid var(--border-primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 80px;
+            background-color: var(--bg-secondary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* --- Novo Header do Dashboard --- */
+        .header {
+            padding: 0 var(--spacing-lg); 
+            border-bottom: 1px solid var(--border-primary);
+            display: flex; 
+            align-items: center; 
+            min-height: 65px; 
+            flex-wrap: wrap; 
+            gap: var(--spacing-md);
+            background-color: var(--bg-secondary) !important;
+            color: var(--text-primary) !important;
+            transition: background-color 0.3s, border-color 0.3s;
+            box-shadow: var(--shadow-sm); 
+            flex-shrink: 0;
+        }
+
+        .header-main {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 0;
+        }
+
+        .header-title {
+            font-size: 1.45rem !important;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            margin: 0;
+            color: var(--text-primary);
+            white-space: nowrap;
+            display: inline-block;
+        }
+
+        .header-center { 
+            flex: 1; 
+            display: flex; 
+            justify-content: center; 
+        }
+
+        .header-right { 
+            flex: 0 0 200px; 
+            display: flex; 
+            justify-content: flex-end; 
+            gap: var(--spacing-sm); 
+            align-items: center; 
+        }
+
+        /* Seletor de Unidade e Filtros */
+        .db-title-select, .db-title-label {
+            background: transparent;
+            color: #ccff33;
+            font-family: 'Inter', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            border: none;
+            outline: none;
+            padding: 0.25rem 0.4rem;
+            margin-left: 0.6rem;
+            border-radius: 6px;
+            transition: background 0.2s;
+            appearance: none;
+            -webkit-appearance: none;
+            box-shadow: none;
+            cursor: pointer;
+            vertical-align: middle;
+            display: inline-block;
+            white-space: nowrap;
+            min-height: 40px;
+        }
+        .db-title-select:focus, .db-title-select:hover {
+            background: var(--bg-tertiary);
+        }
+        .db-title-select option {
+            color: #ccff33;
+            background: var(--bg-secondary);
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        .db-title-label {
+            cursor: default;
+            color: #ccff33 !important;
+        }
+        
+        /* Filtros de mês e ano menores */
+        .db-title-select.filter-select {
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 0.2rem 0.3rem;
+            min-width: 80px;
+            max-width: 120px;
+        }
+        @media (max-width: 768px) {
+            .db-title-select, .db-title-label {
+                font-size: 1rem;
+                padding: 0 0.3rem;
+            }
+        }
+
+        /* Classe auxiliar para texto secundário */
+        .text-text-secondary { 
+            color: var(--text-secondary); 
+        }
+
+        /* Botões do Header */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::after {
+            content: ''; 
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0); 
+            transition: background-color var(--transition-fast);
+        }
+
+        .btn:hover::after { 
+            background-color: rgba(255, 255, 255, 0.05); 
+        }
+
+        .btn:active::after { 
+            background-color: rgba(255, 255, 255, 0.1); 
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-primary);
+            color: var(--text-primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+        }
+
+        .btn-outline:active {
+            transform: translateY(0);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: var(--text-on-accent);
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background-color: var(--accent-primary);
+            color: var(--text-on-accent);
+            border: 1px solid var(--accent-primary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-secondary);
+            border-color: var(--accent-secondary);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+            background-color: var(--bg-tertiary);
+            color: var(--text-secondary);
+            border-color: var(--border-primary);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-primary);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--bg-secondary);
+            border-color: var(--border-secondary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        .btn-sm i, .btn-sm svg.icon {
+            margin-right: 0.4rem;
+            font-size: 0.8rem;
+            width: 16px;
+            height: 16px;
+        }
+
+        .btn-icon-only {
+            padding: 0.5rem;
+            width: 32px;
+            height: 32px;
+        }
+
+        .btn-icon-only i, .btn-icon-only svg.icon {
+            margin: 0;
+            font-size: 1rem;
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Container dos filtros no centro do header */
+        .filters-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg-tertiary);
+            padding: 0.75rem 1rem;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .filter-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-left: 0.75rem;
+        }
+
+        .filter-label:first-child {
+            margin-left: 0;
+        }
+
+        /* Classes auxiliares para compatibilidade */
+        .ml-2 {
+            margin-left: 0.5rem;
+        }
+
+        .flex-grow {
+            flex-grow: 1;
+        }
+
+        .bg-tertiary {
+            background-color: var(--bg-tertiary);
+        }
+
+        .rounded-md {
+            border-radius: var(--border-radius);
+        }
+
+        .px-3 {
+            padding-left: 0.75rem;
+            padding-right: 0.75rem;
+        }
+
+        .py-1 {
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
+        }
+
+        .shadow-sm {
+            box-shadow: var(--shadow-sm);
+        }
+
+        .border {
+            border-width: 1px;
+        }
+
+        .border-border-primary {
+            border-color: var(--border-primary);
+        }
+
+        .text-xs {
+            font-size: 0.75rem;
+        }
+
+        .font-semibold {
+            font-weight: 600;
+        }
+
+        .gap-2 {
+            gap: 0.5rem;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        /* Área de Conteúdo */
+        .content-area {
+            flex: 1;
+            padding: var(--spacing-lg);
+            overflow-y: auto;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -280px;
+                z-index: 50;
+                height: 100vh;
+                transition: left var(--transition-normal);
+            }
+
+            .sidebar.mobile-open {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .header-main {
+                flex: 1;
+            }
+
+            .header-center {
+                display: none;
+            }
+
+            .global-header {
+                padding: 0 1rem;
+            }
+        }
+
+        /* --- Estilos dos Modais Gerais --- */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(2px);
+            opacity: 1;
+            visibility: visible;
+            transition: all 0.3s ease;
+        }
+
+        .modal-backdrop.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .modal {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .btn-close {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            opacity: 0.7;
+        }
+
+        .btn-close:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            opacity: 1;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border-primary);
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+        }
+
+        /* --- Estilos do Modal de Upload - Baseado no Dash Resultados --- */
+        .upload-area {
+            border: 2px dashed var(--border-primary);
+            border-radius: var(--border-radius);
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+        }
+
+        .upload-area:hover, .upload-area.dragover {
+            background: var(--bg-tertiary);
+            border-color: var(--accent-primary);
+            color: var(--text-primary);
+        }
+
+        .upload-area i {
+            color: var(--accent-primary);
+        }
+
+        .drop-zone {
+            border: 2px dashed var(--border-primary);
+            border-radius: var(--border-radius);
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+        }
+
+        .drop-zone:hover, .drop-zone.dragover {
+            background: var(--bg-tertiary);
+            border-color: var(--accent-primary);
+            color: var(--text-primary);
+        }
+
+        .drop-zone i {
+            color: var(--accent-primary);
+        }
+
+        .upload-progress {
+            background: var(--bg-tertiary);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-color);
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .upload-status {
+            padding: 0.75rem 1rem;
+            border-radius: var(--border-radius);
+            margin-top: 1rem;
+            font-weight: 500;
+        }
+
+        /* Estilos adicionais para o modal de upload */
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--accent-primary);
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-link {
+            background: none;
+            border: none;
+            color: var(--accent-primary);
+            cursor: pointer;
+            text-decoration: underline;
+            font-size: inherit;
+            font-family: inherit;
+            padding: 0;
+        }
+
+        .btn-link:hover {
+            color: var(--accent-secondary);
+        }
+
+        .upload-preview {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .file-info i {
+            font-size: 2rem;
+            color: var(--accent-primary);
+        }
+
+        .file-details {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .file-size {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .status-message {
+            padding: 0.75rem;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+        }
+
+        .status-message.info {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .status-message.success {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        .status-message.warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .status-message.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        /* CSS complementar para modal de upload */
+        .upload-area.dragover {
+            border-color: var(--success-color) !important;
+            background: rgba(112, 224, 0, 0.05) !important;
+            transform: scale(1.02);
+        }
+
+        .modal {
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-title i {
+            color: var(--accent-primary);
+        }
+
+        .btn-close:hover {
+            transform: scale(1.1);
+        }
+
+        /* --- Estilos do Modal de Login --- */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(1, 13, 50, 0.95);
+            backdrop-filter: blur(12px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .login-modal {
+            background: rgba(1, 13, 50, 0.9);
+            padding: 40px 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .login-modal h2 {
+            color: #FFFFFF;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .login-modal .logo-container {
+            text-align: center;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-modal .logo-container img {
+            max-width: 200px;
+            height: auto;
+            display: block;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-group label {
+            color: #FFFFFF;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            color: #FFFFFF;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.25);
+            border-color: #fd24a0;
+            box-shadow: 0 0 12px rgba(253, 36, 160, 0.2);
+        }
+
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            background: #fd24a0;
+            color: #010d32;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-btn:hover {
+            background: #E01F8C;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(253, 36, 160, 0.4);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(253, 36, 160, 0.2);
+        }
+
+        .login-btn:disabled {
+            background: #666;
+            color: #999;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .error-message {
+            color: #FF6B6B;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+            display: none;
+            font-weight: 500;
+            padding: 10px;
+            background: rgba(255, 107, 107, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 107, 107, 0.2);
+        }
+
+        .success-message {
+            color: #4CAF50;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+            display: none;
+            font-weight: 500;
+            padding: 10px;
+            background: rgba(76, 175, 80, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(76, 175, 80, 0.2);
+        }
+
+        /* Estados de loading */
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(1, 13, 50, 0.3);
+            border-radius: 50%;
+            border-top-color: #010d32;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header Global -->
+        <header class="global-header">
+            <div class="header-left">
+                <div class="logo-brand">
+                    <img src="https://iili.io/3RBGZox.png" alt="DromeFlow Logo" style="height: 45px; width: auto;">
+                </div>
+            </div>
+            <div class="header-main">
+                <h1 class="header-title" id="pageTitle">Dashboard</h1>
+                <select id="unitSelect" class="db-title-select">
+                    <option value="">Selecione uma unidade</option>
+                    <!-- Opções serão preenchidas via JS -->
+                </select>
+            </div>
+            <div class="header-center">
+                <div class="filters-container">
+                    <label class="filter-label text-text-secondary">Mês</label>
+                    <select id="monthFilter" class="db-title-select filter-select ml-2">
+                        <option value="">Todos</option>
+                        <option value="1">Janeiro</option>
+                        <option value="2">Fevereiro</option>
+                        <option value="3">Março</option>
+                        <option value="4">Abril</option>
+                        <option value="5">Maio</option>
+                        <option value="6">Junho</option>
+                        <option value="7">Julho</option>
+                        <option value="8">Agosto</option>
+                        <option value="9">Setembro</option>
+                        <option value="10">Outubro</option>
+                        <option value="11">Novembro</option>
+                        <option value="12">Dezembro</option>
+                    </select>
+                    <label class="filter-label text-text-secondary">Ano</label>
+                    <select id="yearFilter" class="db-title-select filter-select ml-2">
+                        <option value="">Todos</option>
+                        <option value="2023">2023</option>
+                        <option value="2024">2024</option>
+                        <option value="2025">2025</option>
+                    </select>
+                </div>
+            </div>
+            <div class="header-right">
+                <button id="uploadXlsxBtn" class="btn btn-sm btn-outline btn-icon-only" onclick="abrirModalUpload()" title="Upload XLSX">
+                    <i class="fas fa-upload"></i>
+                </button>
+                <button id="refreshBtn" class="btn btn-sm btn-outline btn-icon-only" title="Atualizar">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button id="headerThemeToggle" class="btn btn-sm btn-outline btn-icon-only" title="Alternar tema claro/escuro">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <!-- Botão de Sair -->
+                <button id="logoutBtn" class="btn btn-sm btn-danger btn-icon-only" title="Sair" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="main-layout">
+            <!-- Sidebar -->
+            <aside class="sidebar" id="sidebar">
+                <!-- Navegação -->
+                <nav class="sidebar-nav">
+                    <!-- Menu Gestão -->
+                    <div class="nav-item">
+                        <a href="#" class="nav-link" data-menu="gestao">
+                            <i class="nav-icon fas fa-cog"></i>
+                            <span class="nav-text">Menu Gestão</span>
+                            <i class="nav-arrow fas fa-chevron-right"></i>
+                        </a>
+                        <div class="submenu" id="submenu-gestao">
+                            <div class="submenu-item">
+                                <a href="#" class="submenu-link" data-module="unidade">
+                                    <span>Unidade</span>
+                                </a>
+                            </div>
+                            <div class="submenu-item">
+                                <a href="#" class="submenu-link" data-module="clientes">
+                                    <span>Clientes</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dashboard -->
+                    <div class="nav-item">
+                        <a href="#" class="nav-link active" data-module="dashboard">
+                            <i class="nav-icon fas fa-chart-pie"></i>
+                            <span class="nav-text">Dashboard</span>
+                        </a>
+                    </div>
+
+                    <!-- Agenda -->
+                    <div class="nav-item">
+                        <a href="#" class="nav-link" data-module="agenda">
+                            <i class="nav-icon fas fa-calendar-alt"></i>
+                            <span class="nav-text">Agenda</span>
+                        </a>
+                    </div>
+
+                    <!-- Pós-Venda -->
+                    <div class="nav-item">
+                        <a href="#" class="nav-link" data-module="pos-venda">
+                            <i class="nav-icon fas fa-handshake"></i>
+                            <span class="nav-text">Pós-Venda</span>
+                        </a>
+                    </div>
+
+                    <!-- Recrutamento -->
+                    <div class="nav-item">
+                        <a href="#" class="nav-link" data-module="recrutamento">
+                            <i class="nav-icon fas fa-users"></i>
+                            <span class="nav-text">Recrutamento</span>
+                        </a>
+                    </div>
+                </nav>
+
+                <!-- Footer da Sidebar -->
+                <div class="sidebar-footer">
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            U
+                        </div>
+                        <div class="user-details">
+                            <div class="user-name">Usuário</div>
+                            <div class="user-role">Faça login</div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Conteúdo Principal -->
+            <main class="main-content">
+                <!-- Área de Conteúdo -->
+                <div class="content-area" id="contentArea">
+                    <div style="text-align: center; padding: 4rem 2rem;">
+                        <i class="fas fa-chart-pie" style="font-size: 4rem; color: var(--accent-primary); margin-bottom: 2rem;"></i>
+                        <h2 style="font-size: 2rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">
+                            Bem-vindo ao DromeFlow
+                        </h2>
+                        <p style="font-size: 1.1rem; color: var(--text-secondary); max-width: 600px; margin: 0 auto;">
+                            Sistema de gestão completo para sua empresa. Utilize o menu lateral para navegar entre os módulos disponíveis.
+                        </p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal de Login -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-modal">
+            <div class="logo-container">
+                <img src="https://iili.io/3IVuaEb.png" alt="DromeFlow Logo">
+            </div>
+            <h2>Acesso ao Sistema</h2>
+            <form id="loginForm">
+                <div class="input-group">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" name="email" placeholder="Digite seu e-mail" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" name="password" placeholder="Digite sua senha" required>
+                </div>
+                <button type="submit" class="login-btn" id="loginBtn">Entrar</button>
+                <div class="error-message" id="errorMessage"></div>
+                <div class="success-message" id="successMessage"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Upload XLSX -->
+    <div class="modal-backdrop hidden" id="uploadModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Upload de Arquivo XLSX</h3>
+                <button type="button" class="btn-close" onclick="closeUploadModal()" title="Fechar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="upload-area" id="dropZone">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <p class="upload-text">
+                        Arraste e solte seu arquivo XLSX aqui
+                    </p>
+                    <p style="margin: 1rem 0; color: var(--text-secondary);">ou</p>
+                    <button type="button" class="btn btn-primary" onclick="document.getElementById('xlsxInput').click()">
+                        <i class="fas fa-folder-open"></i>
+                        Selecionar Arquivo
+                    </button>
+                    <input type="file" id="xlsxInput" accept=".xlsx" style="display: none;">
+                    <div style="margin-top: 1.5rem; font-size: 0.875rem; color: var(--text-secondary); text-align: center;">
+                        <p><strong>Formatos aceitos:</strong> .xlsx</p>
+                        <p><strong>Tamanho máximo:</strong> 10MB</p>
+                    </div>
+                </div>
+                
+                <div class="upload-preview hidden" id="uploadPreview">
+                    <div class="file-info">
+                        <i class="fas fa-file-excel"></i>
+                        <div class="file-details">
+                            <div class="file-name" id="fileName"></div>
+                            <div class="file-size" id="fileInfo"></div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline" onclick="clearFileSelection()" title="Remover arquivo">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="upload-status hidden" id="uploadStatus">
+                    <div class="status-message" id="statusMessage"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeUploadModal()">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" id="processFile" onclick="processUploadedFile()" disabled>
+                    <i class="fas fa-cogs"></i>
+                    Processar Arquivo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuração do Supabase
+        const SUPABASE_URL = 'https://etztlxlfgoqbgwyaozwf.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0enRseGxmZ29xYmd3eWFvendmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMzMzE2NDAsImV4cCI6MjA2ODkwNzY0MH0.gGDCHoMv3J3La2h7QCItNS56Xs-UrhaNa6M_jFZ9w9I';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Estado da aplicação
+        let currentUser = null;
+        let userUnits = [];
+        let userRole = null; // Papel do usuário (super_admin, admin, user)
+        let availableModules = []; // Módulos que o usuário pode acessar
+        let unitModules = []; // Módulos disponíveis na unidade (para admins)
+        
+        // Cache para templates carregados
+        const templateCache = new Map();
+        
+        // Listener para módulos carregados - Sistema aprimorado
+        document.addEventListener('moduleLoaded', function(e) {
+            const { module, templatePath, fromCache, timestamp } = e.detail;
+            console.log(`✅ Módulo "${module}" inicializado com sucesso ${fromCache ? '(cache)' : '(novo)'}`);
+            
+            // Sistema de inicialização modular aprimorado
+            const moduleInitializers = {
+                'dashboard': initializeDashboard,
+                'clientes': initializeClientes, 
+                'agenda': initializeAgenda,
+                'unidade': initializeUnidade,
+                'pos-venda': initializePosVenda,
+                'recrutamento': initializeRecrutamento
+                // Removido 'gestao-sistema' para usar template HTML
+            };
+
+            // Executar inicializador específico se existir
+            if (moduleInitializers[module]) {
+                try {
+                    moduleInitializers[module]();
+                } catch (error) {
+                    console.error(`❌ Erro ao inicializar módulo "${module}":`, error);
+                }
+            } else {
+                console.warn(`⚠️ Inicializador não encontrado para o módulo "${module}"`);
+            }
+
+            // Disparar evento global de módulo pronto
+            document.dispatchEvent(new CustomEvent('moduleReady', {
+                detail: { module, timestamp: new Date().toISOString() }
+            }));
+        });
+
+        // Funções de inicialização específicas dos módulos
+        function initializeDashboard() {
+            console.log('📊 Dashboard inicializado');
+            
+            // Configurar listeners para filtros do dashboard
+            setupDashboardFilters();
+            
+            // Carregar dados iniciais do dashboard
+            loadDashboardData();
+            
+            console.log('✅ Dashboard pronto para uso');
+        }
+
+        // Configurar filtros do dashboard
+        function setupDashboardFilters() {
+            const unitSelect = document.getElementById('unitSelect');
+            const monthFilter = document.getElementById('monthFilter');
+            const yearFilter = document.getElementById('yearFilter');
+            
+            // Listener para mudança de unidade
+            if (unitSelect) {
+                unitSelect.addEventListener('change', (e) => {
+                    console.log('🔄 Unidade alterada:', e.target.value);
+                    loadDashboardData();
+                });
+            }
+            
+            // Listener para mudança de mês
+            if (monthFilter) {
+                monthFilter.addEventListener('change', (e) => {
+                    console.log('🔄 Mês alterado:', e.target.value);
+                    loadDashboardData();
+                });
+            }
+            
+            // Listener para mudança de ano
+            if (yearFilter) {
+                yearFilter.addEventListener('change', (e) => {
+                    console.log('🔄 Ano alterado:', e.target.value);
+                    loadDashboardData();
+                });
+            }
+        }
+
+        // Carregar dados do dashboard
+        async function loadDashboardData() {
+            const unitSelect = document.getElementById('unitSelect');
+            const selectedUnit = unitSelect?.value;
+            
+            if (!selectedUnit) {
+                console.log('⚠️ Nenhuma unidade selecionada');
+                clearDashboardData();
+                return;
+            }
+            
+            console.log('📊 Carregando dados do dashboard para unidade:', selectedUnit);
+            
+            try {
+                // Obter filtros de data
+                const filters = getDashboardFilters();
+                
+                // Carregar métricas principais
+                await loadMainMetrics(selectedUnit, filters);
+                
+                // Carregar dados para gráfico
+                await loadChartData(selectedUnit, filters);
+                
+                // Carregar dados de clientes
+                await loadClientData(selectedUnit, filters);
+                
+                console.log('✅ Dados do dashboard carregados com sucesso');
+            } catch (error) {
+                console.error('❌ Erro ao carregar dados do dashboard:', error);
+                showDashboardError('Erro ao carregar dados do dashboard');
+            }
+        }
+
+        // Obter filtros de data atuais
+        function getDashboardFilters() {
+            const monthFilter = document.getElementById('monthFilter');
+            const yearFilter = document.getElementById('yearFilter');
+            
+            return {
+                month: monthFilter?.value || null,
+                year: yearFilter?.value || new Date().getFullYear().toString()
+            };
+        }
+
+        // Carregar métricas principais
+        async function loadMainMetrics(unitId, filters) {
+            try {
+                let query = supabase
+                    .from('resultados')
+                    .select('*')
+                    .eq('unit_id', unitId);
+                
+                // Aplicar filtros de data
+                if (filters.year) {
+                    query = query.gte('data', `${filters.year}-01-01`);
+                    query = query.lte('data', `${filters.year}-12-31`);
+                }
+                
+                if (filters.month) {
+                    const month = filters.month.padStart(2, '0');
+                    query = query.gte('data', `${filters.year}-${month}-01`);
+                    
+                    // Último dia do mês
+                    const lastDay = new Date(filters.year, filters.month, 0).getDate();
+                    query = query.lte('data', `${filters.year}-${month}-${lastDay}`);
+                }
+                
+                const { data: resultados, error } = await query;
+                
+                if (error) throw error;
+                
+                console.log('📊 Resultados carregados:', resultados?.length || 0);
+                
+                // Calcular métricas
+                const metrics = calculateMetrics(resultados || []);
+                
+                // Atualizar interface
+                updateMetricCards(metrics);
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar métricas:', error);
+                throw error;
+            }
+        }
+
+        // Calcular métricas dos dados
+        function calculateMetrics(resultados) {
+            const now = new Date();
+            const currentMonth = now.getMonth() + 1;
+            const currentYear = now.getFullYear();
+            
+            // Filtros para este mês
+            const thisMonth = resultados.filter(r => {
+                const data = new Date(r.data);
+                return data.getMonth() + 1 === currentMonth && data.getFullYear() === currentYear;
+            });
+            
+            // Filtros para mês anterior
+            const lastMonth = resultados.filter(r => {
+                const data = new Date(r.data);
+                const lastMonthNum = currentMonth === 1 ? 12 : currentMonth - 1;
+                const lastMonthYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+                return data.getMonth() + 1 === lastMonthNum && data.getFullYear() === lastMonthYear;
+            });
+            
+            // Filtros para esta semana
+            const today = new Date();
+            const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
+            const endOfWeek = new Date(today.setDate(today.getDate() - today.getDay() + 6));
+            
+            const thisWeek = resultados.filter(r => {
+                const data = new Date(r.data);
+                return data >= startOfWeek && data <= endOfWeek;
+            });
+            
+            // Calcular totais
+            const totalAtendimentos = thisMonth.length;
+            const totalFaturamento = thisMonth.reduce((sum, r) => sum + (parseFloat(r.valor) || 0), 0);
+            const clientesUnicos = new Set(thisMonth.map(r => r.cliente)).size;
+            const atendimentosSemana = thisWeek.length;
+            
+            // Calcular comparações com mês anterior
+            const lastMonthAtendimentos = lastMonth.length;
+            const lastMonthFaturamento = lastMonth.reduce((sum, r) => sum + (parseFloat(r.valor) || 0), 0);
+            const lastMonthClientes = new Set(lastMonth.map(r => r.cliente)).size;
+            
+            // Semana anterior
+            const lastWeekStart = new Date(startOfWeek);
+            lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+            const lastWeekEnd = new Date(endOfWeek);
+            lastWeekEnd.setDate(lastWeekEnd.getDate() - 7);
+            
+            const lastWeek = resultados.filter(r => {
+                const data = new Date(r.data);
+                return data >= lastWeekStart && data <= lastWeekEnd;
+            });
+            const lastWeekAtendimentos = lastWeek.length;
+            
+            return {
+                atendimentos: {
+                    total: totalAtendimentos,
+                    comparison: calculatePercentageChange(totalAtendimentos, lastMonthAtendimentos)
+                },
+                faturamento: {
+                    total: totalFaturamento,
+                    comparison: calculatePercentageChange(totalFaturamento, lastMonthFaturamento)
+                },
+                clientes: {
+                    total: clientesUnicos,
+                    comparison: calculatePercentageChange(clientesUnicos, lastMonthClientes)
+                },
+                semana: {
+                    total: atendimentosSemana,
+                    comparison: calculatePercentageChange(atendimentosSemana, lastWeekAtendimentos)
+                }
+            };
+        }
+
+        // Calcular mudança percentual
+        function calculatePercentageChange(current, previous) {
+            if (previous === 0) return current > 0 ? 100 : 0;
+            return Math.round(((current - previous) / previous) * 100);
+        }
+
+        // Atualizar cards de métricas
+        function updateMetricCards(metrics) {
+            // Atendimentos
+            const totalAtendimentos = document.getElementById('total-atendimentos');
+            const compAtendimentos = document.getElementById('comp-atendimentos');
+            if (totalAtendimentos) totalAtendimentos.textContent = metrics.atendimentos.total.toLocaleString();
+            if (compAtendimentos) updateComparisonElement(compAtendimentos, metrics.atendimentos.comparison);
+            
+            // Faturamento
+            const totalFaturamento = document.getElementById('total-faturamento');
+            const compFaturamento = document.getElementById('comp-faturamento');
+            if (totalFaturamento) totalFaturamento.textContent = `R$ ${metrics.faturamento.total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+            if (compFaturamento) updateComparisonElement(compFaturamento, metrics.faturamento.comparison);
+            
+            // Clientes
+            const totalClientes = document.getElementById('total-clientes');
+            const compClientes = document.getElementById('comp-clientes');
+            if (totalClientes) totalClientes.textContent = metrics.clientes.total.toLocaleString();
+            if (compClientes) updateComparisonElement(compClientes, metrics.clientes.comparison);
+            
+            // Semana
+            const totalSemana = document.getElementById('total-semana');
+            const compSemana = document.getElementById('comp-semana');
+            if (totalSemana) totalSemana.textContent = metrics.semana.total.toLocaleString();
+            if (compSemana) updateComparisonElement(compSemana, metrics.semana.comparison);
+        }
+
+        // Atualizar elemento de comparação
+        function updateComparisonElement(element, percentage) {
+            const icon = element.querySelector('i');
+            const span = element.querySelector('span');
+            
+            if (percentage > 0) {
+                icon.className = 'fas fa-caret-up';
+                span.textContent = `+${percentage}%`;
+                element.style.color = 'var(--success-color)';
+            } else if (percentage < 0) {
+                icon.className = 'fas fa-caret-down';
+                span.textContent = `${percentage}%`;
+                element.style.color = 'var(--danger-color)';
+            } else {
+                icon.className = 'fas fa-equals';
+                span.textContent = '0%';
+                element.style.color = 'var(--text-secondary)';
+            }
+        }
+
+        // Carregar dados para gráfico
+        async function loadChartData(unitId, filters) {
+            // Implementar gráfico de atendimentos por dia
+            console.log('📊 Carregando dados do gráfico...');
+            // TODO: Implementar gráfico com Chart.js ou similar
+        }
+
+        // Carregar dados de clientes
+        async function loadClientData(unitId, filters) {
+            try {
+                let query = supabase
+                    .from('resultados')
+                    .select('cliente, data, whatscliente, valor')
+                    .eq('unit_id', unitId)
+                    .not('cliente', 'is', null);
+                
+                // Aplicar filtros de data
+                if (filters.year) {
+                    query = query.gte('data', `${filters.year}-01-01`);
+                    query = query.lte('data', `${filters.year}-12-31`);
+                }
+                
+                if (filters.month) {
+                    const month = filters.month.padStart(2, '0');
+                    query = query.gte('data', `${filters.year}-${month}-01`);
+                    
+                    const lastDay = new Date(filters.year, filters.month, 0).getDate();
+                    query = query.lte('data', `${filters.year}-${month}-${lastDay}`);
+                }
+                
+                const { data: clienteData, error } = await query.order('data', { ascending: false });
+                
+                if (error) throw error;
+                
+                // Processar dados de clientes
+                const processedClients = processClientData(clienteData || []);
+                
+                // Atualizar tabelas de clientes
+                updateClientTables(processedClients);
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar dados de clientes:', error);
+                throw error;
+            }
+        }
+
+        // Processar dados de clientes
+        function processClientData(data) {
+            const clientMap = new Map();
+            
+            data.forEach(record => {
+                const cliente = record.cliente;
+                if (!clientMap.has(cliente)) {
+                    clientMap.set(cliente, {
+                        nome: cliente,
+                        telefone: record.whatscliente || 'N/A',
+                        ultimoAtendimento: record.data,
+                        totalAtendimentos: 0,
+                        valorTotal: 0,
+                        registros: []
+                    });
+                }
+                
+                const clientInfo = clientMap.get(cliente);
+                clientInfo.totalAtendimentos++;
+                clientInfo.valorTotal += parseFloat(record.valor) || 0;
+                clientInfo.registros.push(record);
+                
+                // Atualizar último atendimento (mais recente)
+                if (new Date(record.data) > new Date(clientInfo.ultimoAtendimento)) {
+                    clientInfo.ultimoAtendimento = record.data;
+                }
+            });
+            
+            const clientes = Array.from(clientMap.values());
+            
+            // Classificar clientes
+            const now = new Date();
+            const clientesAtivos = clientes.filter(c => {
+                const diasSemAtendimento = Math.floor((now - new Date(c.ultimoAtendimento)) / (1000 * 60 * 60 * 24));
+                return diasSemAtendimento <= 30;
+            });
+            
+            const clientesRecorrentes = clientes.filter(c => c.totalAtendimentos >= 3);
+            
+            const clientesAtencao = clientes.filter(c => {
+                const diasSemAtendimento = Math.floor((now - new Date(c.ultimoAtendimento)) / (1000 * 60 * 60 * 24));
+                return diasSemAtendimento > 30 && diasSemAtendimento <= 90;
+            });
+            
+            return {
+                todos: clientes,
+                ativos: clientesAtivos,
+                recorrentes: clientesRecorrentes,
+                atencao: clientesAtencao
+            };
+        }
+
+        // Atualizar tabelas de clientes
+        function updateClientTables(clientesData) {
+            // Atualizar contadores nos filter cards
+            const filterTotalValue = document.getElementById('filter-total-value');
+            const filterRecorrentesValue = document.getElementById('filter-recorrentes-value');
+            const filterAtencaoValue = document.getElementById('filter-atencao-value');
+            const filterOutrosValue = document.getElementById('filter-outros-value');
+            
+            if (filterTotalValue) filterTotalValue.textContent = clientesData.todos.length;
+            if (filterRecorrentesValue) filterRecorrentesValue.textContent = clientesData.recorrentes.length;
+            if (filterAtencaoValue) filterAtencaoValue.textContent = clientesData.atencao.length;
+            if (filterOutrosValue) filterOutrosValue.textContent = Math.max(0, clientesData.todos.length - clientesData.recorrentes.length - clientesData.atencao.length);
+            
+            // Popular tabela de clientes ativos (padrão)
+            populateClientTable('tabela-clientes-ativos', clientesData.ativos, 'ativo');
+        }
+
+        // Popular tabela de clientes
+        function populateClientTable(tableId, clientes, tipo) {
+            const table = document.getElementById(tableId);
+            if (!table) return;
+            
+            const tbody = table.querySelector('tbody');
+            if (!tbody) return;
+            
+            tbody.innerHTML = '';
+            
+            clientes.slice(0, 10).forEach(cliente => { // Limitar a 10 para performance
+                const row = document.createElement('tr');
+                
+                const ultimoAtendimento = new Date(cliente.ultimoAtendimento).toLocaleDateString('pt-BR');
+                const diasSemAtendimento = Math.floor((new Date() - new Date(cliente.ultimoAtendimento)) / (1000 * 60 * 60 * 24));
+                
+                let statusBadge = '';
+                if (tipo === 'ativo') {
+                    statusBadge = '<span class="status-badge-table status-active">Ativo</span>';
+                } else if (tipo === 'recorrente') {
+                    statusBadge = '<span class="status-badge-table status-recurrent">Recorrente</span>';
+                } else if (tipo === 'atencao') {
+                    statusBadge = '<span class="status-badge-table status-attention">Atenção</span>';
+                }
+                
+                row.innerHTML = `
+                    <td>${cliente.nome}</td>
+                    <td>${cliente.telefone}</td>
+                    <td>${ultimoAtendimento}</td>
+                    <td>${tipo === 'atencao' ? `${diasSemAtendimento} dias` : (tipo === 'recorrente' ? `${cliente.totalAtendimentos} atendimentos` : statusBadge)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline" onclick="viewClientDetails('${cliente.nome}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // Limpar dados do dashboard
+        function clearDashboardData() {
+            // Zerar métricas
+            const elements = [
+                'total-atendimentos', 'total-faturamento', 'total-clientes', 'total-semana',
+                'filter-total-value', 'filter-recorrentes-value', 'filter-atencao-value', 'filter-outros-value'
+            ];
+            
+            elements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) element.textContent = '0';
+            });
+            
+            // Limpar comparações
+            const comparisons = ['comp-atendimentos', 'comp-faturamento', 'comp-clientes', 'comp-semana'];
+            comparisons.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    const icon = element.querySelector('i');
+                    const span = element.querySelector('span');
+                    if (icon) icon.className = 'fas fa-equals';
+                    if (span) span.textContent = '0%';
+                    element.style.color = 'var(--text-secondary)';
+                }
+            });
+            
+            // Limpar tabelas
+            const tables = ['tabela-clientes-ativos', 'tabela-clientes-recorrentes', 'tabela-clientes-atencao'];
+            tables.forEach(id => {
+                const table = document.getElementById(id);
+                if (table) {
+                    const tbody = table.querySelector('tbody');
+                    if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">Selecione uma unidade para ver os dados</td></tr>';
+                }
+            });
+        }
+
+        // Mostrar erro no dashboard
+        function showDashboardError(message) {
+            console.error('❌ Erro no dashboard:', message);
+            // TODO: Implementar notificação de erro
+        }
+
+        // Função global para ver detalhes do cliente
+        window.viewClientDetails = function(clientName) {
+            console.log('👁️ Visualizando detalhes do cliente:', clientName);
+            // TODO: Implementar modal de detalhes do cliente
+        };
+
+        function initializeClientes() {
+            console.log('👥 Módulo Clientes inicializado');
+            // Inicializar tabelas, filtros, etc.
+        }
+
+        function initializeAgenda() {
+            console.log('📅 Módulo Agenda inicializado');
+            // Inicializar calendário, eventos, etc.
+        }
+
+        function initializeUnidade() {
+            console.log('🏢 Módulo Unidade inicializado');
+            // Inicializar gestão de unidades
+        }
+
+        function initializePosVenda() {
+            console.log('💰 Módulo Pós-Venda inicializado');
+            // Inicializar relatórios e análises
+        }
+
+        function initializeRecrutamento() {
+            console.log('🎯 Módulo Recrutamento inicializado');
+            // Inicializar processo seletivo
+        }
+
+        // === SISTEMA DE AUTENTICAÇÃO ===
+        
+        // Função para fazer hash da senha (simulação simples - em produção use bcrypt)
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // Função para carregar informações completas do usuário
+        async function loadUserData(userId) {
+            try {
+                console.log('👤 Carregando dados completos do usuário:', userId);
+                
+                const { data: userData, error: userError } = await supabase
+                    .from('users')
+                    .select(`
+                        id,
+                        email,
+                        role_id,
+                        roles (
+                            name,
+                            display_name,
+                            level
+                        )
+                    `)
+                    .eq('id', userId)
+                    .single();
+
+                if (userError) {
+                    console.error('❌ Erro ao carregar dados do usuário:', userError);
+                    throw userError;
+                }
+
+                console.log('📊 Dados do usuário carregados:', userData);
+
+                currentUser = {
+                    id: userData.id,
+                    email: userData.email,
+                    role_id: userData.role_id
+                };
+
+                userRole = userData.roles;
+                console.log('🎭 Papel do usuário definido:', userRole);
+
+                // Carregar unidades
+                console.log('🏢 Carregando unidades do usuário...');
+                await loadUserUnits(userId);
+                
+                // Carregar módulos baseado no papel
+                console.log('🔐 Carregando módulos baseado no papel...');
+                await loadUserModules(userId);
+
+                console.log('✅ Dados do usuário carregados com sucesso');
+                return { success: true, user: currentUser };
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar dados do usuário:', error);
+                throw error;
+            }
+        }
+
+        // Função para carregar módulos baseado no papel do usuário
+        async function loadUserModules(userId) {
+            try {
+                console.log('🔐 Carregando módulos para:', userRole?.name);
+
+                // Verificar se userRole foi carregado
+                if (!userRole || !userRole.name) {
+                    console.error('❌ Papel do usuário não foi carregado corretamente');
+                    throw new Error('Papel do usuário não definido');
+                }
+
+                if (userRole.name === 'super_admin') {
+                    // Super Admin vê todos os módulos + interface de gestão
+                    console.log('🔄 Chamando loadAllModulesForSuperAdmin()...');
+                    await loadAllModulesForSuperAdmin();
+                    console.log('✅ loadAllModulesForSuperAdmin() concluída. Módulos:', availableModules?.length);
+                } else if (userRole.name === 'admin') {
+                    // Admin da unidade vê módulos da unidade + interface de gestão de usuários
+                    await loadModulesForUnitAdmin(userId);
+                } else {
+                    // User comum vê apenas módulos liberados pelo admin
+                    await loadModulesForUser(userId);
+                }
+
+                // Atualizar sidebar
+                updateSidebarForUser();
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar módulos:', error);
+                availableModules = [];
+                throw error;
+            }
+        }
+
+        // Carregar todos os módulos para Super Admin
+        async function loadAllModulesForSuperAdmin() {
+            try {
+                console.log('🔄 Carregando módulos para Super Admin...');
+                
+                const { data: modules, error } = await supabase
+                    .from('modules')
+                    .select('*')
+                    .eq('is_active', true)
+                    .order('order_index', { ascending: true });
+
+                if (error) {
+                    console.error('❌ Erro ao buscar módulos:', error);
+                    throw error;
+                }
+
+                console.log('📊 Módulos carregados do banco:', modules);
+
+                // Mapear módulos com permissões completas para Super Admin
+                availableModules = (modules || []).map(module => ({
+                    ...module,
+                    permissions: { can_view: true, can_edit: true, can_delete: true }
+                }));
+
+                console.log('👑 Super Admin - Módulos disponíveis:', availableModules.map(m => `${m.name} (${m.display_name})`));
+                
+            } catch (error) {
+                console.error('Erro ao carregar módulos para Super Admin:', error);
+                throw error;
+            }
+        }
+
+        // Carregar módulos para Admin da Unidade
+        async function loadModulesForUnitAdmin(userId) {
+            try {
+                // Verificar se userUnits foi carregado
+                if (!userUnits || userUnits.length === 0) {
+                    console.warn('⚠️ Admin sem unidades definidas');
+                    availableModules = [];
+                    return;
+                }
+
+                // Para cada unidade que o admin gerencia, buscar módulos disponíveis
+                const modulePromises = userUnits.map(async (unit) => {
+                    const { data: unitModules, error } = await supabase
+                        .from('unit_modules')
+                        .select(`
+                            modules (
+                                id,
+                                name,
+                                display_name,
+                                icon,
+                                permissions
+                            )
+                        `)
+                        .eq('unit_id', unit.id);
+
+                    if (error) {
+                        console.error(`Erro ao carregar módulos para unidade ${unit.name}:`, error);
+                        return [];
+                    }
+
+                    return (unitModules?.map(um => um.modules) || []);
+                });
+
+                const allUnitModules = await Promise.all(modulePromises);
+                const flatModules = allUnitModules.flat();
+                
+                // Remover duplicatas baseado no ID
+                const uniqueModules = flatModules.filter((module, index, arr) => 
+                    arr.findIndex(m => m.id === module.id) === index
+                );
+
+                availableModules = uniqueModules;
+                console.log('🏢 Admin - Módulos carregados:', availableModules.length);
+                
+            } catch (error) {
+                console.error('Erro ao carregar módulos para Unit Admin:', error);
+                availableModules = [];
+                throw error;
+            }
+        }
+
+        // Carregar módulos para User comum
+        async function loadModulesForUser(userId) {
+            try {
+                // Buscar módulos que o usuário tem acesso via user_modules
+                const { data: userModules, error } = await supabase
+                    .from('user_modules')
+                    .select(`
+                        modules (
+                            id,
+                            name,
+                            display_name,
+                            icon,
+                            permissions
+                        )
+                    `)
+                    .eq('user_id', userId);
+
+                if (error) {
+                    console.error('Erro ao carregar módulos para usuário:', error);
+                    throw error;
+                }
+
+                availableModules = userModules?.map(um => um.modules) || [];
+                console.log('👤 User - Módulos carregados:', availableModules.length);
+                
+            } catch (error) {
+                console.error('Erro ao carregar módulos para User:', error);
+                availableModules = [];
+                throw error;
+            }
+        }
+
+        // Carregar módulos para Admin da Unidade
+        async function loadModulesForUnitAdmin(userId) {
+            try {
+                // Verificar se userUnits foi carregado
+                if (!userUnits || userUnits.length === 0) {
+                    console.warn('⚠️ Admin não possui unidades associadas');
+                    availableModules = [];
+                    return;
+                }
+
+                // Para cada unidade que o admin gerencia, buscar módulos disponíveis
+                const modulePromises = userUnits.map(async (unit) => {
+                    const { data: unitModulesData, error } = await supabase
+                        .from('unit_modules')
+                        .select(`
+                            module_id,
+                            modules (
+                                id,
+                                name,
+                                display_name,
+                                icon,
+                                parent_module,
+                                order_index
+                            )
+                        `)
+                        .eq('unit_id', unit.id);
+
+                    if (error) throw error;
+
+                    return unitModulesData?.map(item => ({
+                        ...item.modules,
+                        unit_id: unit.id,
+                        unit_name: unit.name,
+                        permissions: { can_view: true, can_create: true, can_edit: true, can_delete: false }
+                    })) || [];
+                });
+
+                const allUnitModules = await Promise.all(modulePromises);
+                const flatModules = allUnitModules.flat();
+
+                // Remover duplicatas
+                const uniqueModules = flatModules.filter((module, index, self) => 
+                    index === self.findIndex(m => m.name === module.name)
+                );
+
+                availableModules = uniqueModules;
+
+                // Armazenar módulos da unidade para interface de gestão
+                unitModules = flatModules;
+
+                console.log('🏢 Admin da Unidade - Módulos carregados:', availableModules.length);
+                
+            } catch (error) {
+                console.error('Erro ao carregar módulos para Admin:', error);
+                throw error;
+            }
+        }
+
+        // Carregar módulos para User comum
+        async function loadModulesForUser(userId) {
+            try {
+                // Verificar se userUnits foi carregado
+                if (!userUnits || userUnits.length === 0) {
+                    console.warn('⚠️ Usuário não possui unidades associadas');
+                    availableModules = [];
+                    return;
+                }
+
+                const modulePromises = userUnits.map(async (unit) => {
+                    const { data: userModulesData, error } = await supabase
+                        .from('user_module_permissions')
+                        .select(`
+                            module_id,
+                            modules (
+                                id,
+                                name,
+                                display_name,
+                                icon,
+                                parent_module,
+                                order_index
+                            )
+                        `)
+                        .eq('user_id', userId)
+                        .eq('unit_id', unit.id);
+
+                    if (error) throw error;
+
+                    return userModulesData?.map(item => ({
+                        ...item.modules,
+                        unit_id: unit.id,
+                        unit_name: unit.name,
+                        permissions: { can_view: true, can_create: false, can_edit: false, can_delete: false }
+                    })) || [];
+                });
+
+                const allUserModules = await Promise.all(modulePromises);
+                const flatUserModules = allUserModules.flat();
+
+                // Remover duplicatas
+                const uniqueUserModules = flatUserModules.filter((module, index, self) => 
+                    index === self.findIndex(m => m.name === module.name)
+                );
+
+                availableModules = uniqueUserModules;
+
+                console.log('👤 User - Módulos carregados:', availableModules.length);
+                
+            } catch (error) {
+                console.error('Erro ao carregar módulos para User:', error);
+                throw error;
+            }
+        }
+
+        // Função para verificar autenticação
+        async function checkAuth() {
+            const loginOverlay = document.getElementById('loginOverlay');
+            const savedUser = localStorage.getItem('dromeflow_user');
+            
+            if (savedUser) {
+                try {
+                    const userData = JSON.parse(savedUser);
+                    console.log('👤 Usuário salvo encontrado:', userData.email);
+                    
+                    // Carregar dados completos do usuário
+                    await loadUserData(userData.id);
+                    
+                    loginOverlay.style.display = 'none';
+                    updateUserInterface();
+                    return true;
+                } catch (error) {
+                    console.error('Erro ao carregar dados salvos:', error);
+                    localStorage.removeItem('dromeflow_user');
+                }
+            }
+            
+            loginOverlay.style.display = 'flex';
+            return false;
+        }
+
+        // Função para verificar se usuário tem permissão específica
+        function hasPermission(moduleName, permission = 'can_view') {
+            const module = availableModules.find(m => m.name === moduleName);
+            return module && module.permissions[permission];
+        }
+
+        // Função para verificar se usuário pode acessar um módulo
+        function canAccessModule(moduleName) {
+            return hasPermission(moduleName, 'can_view');
+        }
+
+        // Função para realizar login
+        async function performLogin(email, password) {
+            try {
+                console.log('🔐 Iniciando processo de login para:', email);
+                
+                // Buscar usuário na base de dados
+                const { data: users, error } = await supabase
+                    .from('users')
+                    .select('id, email, password, role_id')
+                    .eq('email', email)
+                    .limit(1);
+
+                if (error) {
+                    console.error('❌ Erro na consulta do usuário:', error);
+                    throw new Error('Erro ao consultar base de dados: ' + error.message);
+                }
+
+                if (!users || users.length === 0) {
+                    console.error('❌ Usuário não encontrado:', email);
+                    throw new Error('E-mail não encontrado');
+                }
+
+                const user = users[0];
+                console.log('👤 Usuário encontrado:', { id: user.id, email: user.email, role_id: user.role_id });
+                
+                // Verificar senha - primeiro tenta senha direta, depois hash
+                let senhaValida = false;
+                
+                if (user.password === password) {
+                    senhaValida = true;
+                    console.log('✅ Login com senha em texto simples');
+                } else {
+                    const hashedPassword = await hashPassword(password);
+                    if (user.password === hashedPassword) {
+                        senhaValida = true;
+                        console.log('✅ Login com senha hashada');
+                    }
+                }
+                
+                if (!senhaValida) {
+                    console.error('❌ Senha incorreta para:', email);
+                    throw new Error('Senha incorreta');
+                }
+
+                console.log('🔄 Carregando dados completos do usuário...');
+                // Login bem-sucedido - carregar dados completos do usuário
+                await loadUserData(user.id);
+
+                // Salvar no localStorage
+                localStorage.setItem('dromeflow_user', JSON.stringify(currentUser));
+                console.log('💾 Dados do usuário salvos no localStorage');
+
+                return { success: true, user: currentUser };
+
+            } catch (error) {
+                console.error('❌ Erro no login:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Função para carregar unidades do usuário
+        async function loadUserUnits(userId) {
+            try {
+                console.log('🔍 Carregando unidades para o usuário:', userId);
+                
+                const { data: userUnitsData, error } = await supabase
+                    .from('user_units')
+                    .select(`
+                        unit_id,
+                        units (
+                            id,
+                            name
+                        )
+                    `)
+                    .eq('user_id', userId);
+
+                if (error) {
+                    console.error('Erro na consulta user_units:', error);
+                    throw new Error('Erro ao carregar unidades: ' + error.message);
+                }
+
+                console.log('📊 Dados retornados da consulta:', userUnitsData);
+
+                // Mapear as unidades corretamente
+                userUnits = userUnitsData?.map(item => ({
+                    id: item.units.id,
+                    name: item.units.name
+                })) || [];
+                
+                console.log('✅ Unidades processadas:', userUnits);
+                
+                // Preencher select do header
+                populateUnitSelect();
+                
+                return userUnits;
+            } catch (error) {
+                console.error('❌ Erro ao carregar unidades:', error);
+                userUnits = [];
+                populateUnitSelect(); // Garante que o select seja limpo em caso de erro
+                throw error;
+            }
+        }
+
+        // Função para preencher o select de unidades no header
+        function populateUnitSelect() {
+            const unitSelect = document.getElementById('unitSelect');
+            if (!unitSelect) return;
+
+            console.log('🏢 Preenchendo select de unidades com:', userUnits);
+
+            // Limpar opções existentes
+            unitSelect.innerHTML = '<option value="">Selecione uma unidade</option>';
+            
+            // Verificar se há unidades disponíveis
+            if (!userUnits || userUnits.length === 0) {
+                console.log('⚠️ Nenhuma unidade encontrada para o usuário');
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = 'Nenhuma unidade disponível';
+                option.disabled = true;
+                unitSelect.appendChild(option);
+                return;
+            }
+            
+            // Adicionar cada unidade ao select
+            userUnits.forEach(unit => {
+                const option = document.createElement('option');
+                option.value = unit.id;
+                option.textContent = unit.name;
+                unitSelect.appendChild(option);
+                console.log(`➕ Unidade adicionada: ${unit.name} (${unit.id})`);
+            });
+
+            // Se há apenas uma unidade, selecioná-la automaticamente
+            if (userUnits.length === 1) {
+                unitSelect.value = userUnits[0].id;
+                console.log('🎯 Unidade única selecionada automaticamente:', userUnits[0].name);
+                
+                // Salvar no localStorage
+                localStorage.setItem('lastSelectedUnit', userUnits[0].id);
+                
+                // Disparar evento de mudança para que outros componentes possam reagir
+                const changeEvent = new Event('change', { bubbles: true });
+                unitSelect.dispatchEvent(changeEvent);
+            } else if (userUnits.length > 1) {
+                // Se há múltiplas unidades, tentar restaurar a última selecionada
+                const lastSelectedUnit = localStorage.getItem('lastSelectedUnit');
+                if (lastSelectedUnit && userUnits.find(u => u.id === lastSelectedUnit)) {
+                    unitSelect.value = lastSelectedUnit;
+                    const unitName = userUnits.find(u => u.id === lastSelectedUnit)?.name;
+                    console.log('🔄 Última unidade selecionada restaurada:', unitName);
+                    
+                    // Disparar evento de mudança
+                    const changeEvent = new Event('change', { bubbles: true });
+                    unitSelect.dispatchEvent(changeEvent);
+                } else {
+                    console.log('📋 Múltiplas unidades disponíveis - aguardando seleção do usuário');
+                }
+            }
+
+            console.log('✅ Select de unidades populado com sucesso');
+        }
+
+        // Função para atualizar interface do usuário
+        function updateUserInterface() {
+            console.log('🔄 Atualizando interface do usuário');
+            
+            // Atualizar informações do usuário na sidebar
+            const userAvatar = document.querySelector('.user-avatar');
+            const userName = document.querySelector('.user-name');
+            const userRoleElement = document.querySelector('.user-role');
+
+            if (currentUser && userAvatar && userName && userRoleElement) {
+                userAvatar.textContent = currentUser.email.charAt(0).toUpperCase();
+                userName.textContent = currentUser.email.split('@')[0];
+                
+                // Mostrar papel do usuário e unidades
+                if (userRole) {
+                    const unitCount = userUnits.length;
+                    let roleText = userRole.display_name;
+                    
+                    if (unitCount > 0) {
+                        roleText += ` - ${unitCount} unidade${unitCount > 1 ? 's' : ''}`;
+                    }
+                    
+                    userRoleElement.textContent = roleText;
+                } else {
+                    userRoleElement.textContent = 'Papel não definido';
+                }
+                
+                console.log('👤 Interface do usuário atualizada:', {
+                    email: currentUser.email,
+                    role: userRole?.name,
+                    unitCount: userUnits.length,
+                    units: userUnits.map(u => u.name)
+                });
+            }
+
+            // Atualizar sidebar baseado nas permissões
+            updateSidebarForUser();
+        }
+
+        // Função para atualizar a sidebar baseada nas permissões do usuário
+        function updateSidebarForUser() {
+            console.log('🔧 Atualizando sidebar baseada nas permissões');
+            console.log('📊 Módulos disponíveis:', availableModules?.length || 0);
+            console.log('👤 User Role:', userRole?.name);
+            
+            const sidebarNav = document.querySelector('.sidebar-nav');
+            if (!sidebarNav) return;
+
+            // Limpar navegação atual
+            sidebarNav.innerHTML = '';
+
+            // Se não há módulos disponíveis, mostrar mensagem
+            if (!availableModules || availableModules.length === 0) {
+                console.warn('⚠️ Nenhum módulo disponível para exibir');
+                sidebarNav.innerHTML = `
+                    <div class="nav-item" style="padding: 1rem; text-align: center; color: var(--text-secondary);">
+                        <i class="fas fa-info-circle" style="margin-bottom: 0.5rem; font-size: 1.5rem;"></i>
+                        <p style="margin: 0; font-size: 0.9rem;">Nenhum módulo ativo disponível</p>
+                        <small>Ative módulos no banco de dados</small>
+                    </div>
+                `;
+                return;
+            }
+
+            // Separar módulos principais e submódulos
+            const mainModules = availableModules.filter(module => !module.parent_module);
+            const subModules = availableModules.filter(module => module.parent_module);
+
+            // Criar navegação dinamicamente
+            mainModules.forEach(module => {
+                const navItem = createNavItem(module, subModules);
+                if (navItem) {
+                    sidebarNav.appendChild(navItem);
+                }
+            });
+
+            // Configurar event listeners para os novos menus
+            setupDynamicMenuListeners();
+
+            // Ativar dashboard por padrão se disponível
+            const dashboardModule = availableModules.find(m => m.name === 'dashboard');
+            if (dashboardModule) {
+                const dashboardLink = document.querySelector('[data-module="dashboard"]');
+                if (dashboardLink) {
+                    dashboardLink.classList.add('active');
+                    loadModuleContent('dashboard');
+                }
+            }
+
+            console.log('✅ Sidebar atualizada com', mainModules.length, 'módulos principais');
+        }
+
+        // Função de debug para Super Admin
+        window.debugSuperAdminModules = function() {
+            console.log('=== DEBUG SUPER ADMIN MODULES ===');
+            console.log('Current User:', currentUser);
+            console.log('User Role:', userRole);
+            console.log('Available Modules:', availableModules);
+            console.log('Total Modules:', availableModules?.length || 0);
+            console.log('Modules from Database Only:', availableModules?.map(m => `${m.name} (${m.display_name})`));
+            console.log('Sidebar Nav HTML:', document.querySelector('.sidebar-nav')?.innerHTML);
+            console.log('================================');
+        };
+
+        // Função para forçar recarregamento dos módulos do Super Admin
+        window.forceReloadSuperAdminModules = async function() {
+            if (userRole?.name === 'super_admin') {
+                console.log('🔄 Forçando recarregamento dos módulos do Super Admin...');
+                await loadAllModulesForSuperAdmin();
+                updateSidebarForUser();
+                console.log('✅ Módulos recarregados!');
+            } else {
+                console.warn('⚠️ Usuário não é Super Admin');
+            }
+        };
+
+        // Função para criar item de navegação
+        function createNavItem(module, subModules) {
+            const navItem = document.createElement('div');
+            navItem.className = 'nav-item';
+
+            // Verificar se há submódulos para este módulo
+            const moduleSubModules = subModules.filter(sub => sub.parent_module === module.id);
+            const hasSubModules = moduleSubModules.length > 0;
+
+            if (hasSubModules) {
+                // Criar menu com submódulos
+                navItem.innerHTML = `
+                    <a href="#" class="nav-link" data-menu="${module.name}">
+                        <i class="nav-icon ${module.icon}"></i>
+                        <span class="nav-text">${module.display_name}</span>
+                        <i class="nav-arrow fas fa-chevron-right"></i>
+                    </a>
+                    <div class="submenu" id="submenu-${module.name}">
+                        ${moduleSubModules.map(subModule => `
+                            <div class="submenu-item">
+                                <a href="#" class="submenu-link" data-module="${subModule.name}" 
+                                   data-permissions='${JSON.stringify(subModule.permissions)}'>
+                                    <span>${subModule.display_name}</span>
+                                </a>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                // Criar link direto
+                navItem.innerHTML = `
+                    <a href="#" class="nav-link" data-module="${module.name}" 
+                       data-permissions='${JSON.stringify(module.permissions)}'>
+                        <i class="nav-icon ${module.icon}"></i>
+                        <span class="nav-text">${module.display_name}</span>
+                    </a>
+                `;
+            }
+
+            console.log(`📝 Item de navegação criado: ${module.display_name}`);
+            return navItem;
+        }
+
+        // Função para configurar event listeners dos menus dinamicamente
+        function setupDynamicMenuListeners() {
+            // Remover listeners antigos se existirem
+            document.querySelectorAll('.nav-link[data-menu], .nav-link[data-module], .submenu-link[data-module]').forEach(element => {
+                element.replaceWith(element.cloneNode(true));
+            });
+
+            // Configurar listeners para menus principais
+            document.querySelectorAll('.nav-link[data-menu]').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const menuId = link.dataset.menu;
+                    const submenu = document.getElementById(`submenu-${menuId}`);
+                    
+                    if (submenu) {
+                        const isExpanded = link.classList.contains('expanded');
+                        
+                        // Fechar todos os outros submenus
+                        document.querySelectorAll('.nav-link').forEach(l => {
+                            l.classList.remove('expanded');
+                        });
+                        document.querySelectorAll('.submenu').forEach(s => {
+                            s.classList.remove('expanded');
+                        });
+                        
+                        // Toggle do submenu atual
+                        if (!isExpanded) {
+                            link.classList.add('expanded');
+                            submenu.classList.add('expanded');
+                        }
+                    }
+                });
+            });
+
+            // Configurar listeners para módulos
+            document.querySelectorAll('[data-module]').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const module = link.dataset.module;
+                    
+                    // Remover active de todos os links
+                    document.querySelectorAll('.nav-link, .submenu-link').forEach(l => {
+                        l.classList.remove('active');
+                    });
+                    
+                    // Adicionar active ao link clicado
+                    link.classList.add('active');
+                    
+                    // Atualizar título da página
+                    const moduleData = availableModules.find(m => m.name === module);
+                    const pageTitle = document.getElementById('pageTitle');
+                    if (pageTitle && moduleData) {
+                        pageTitle.textContent = moduleData.display_name;
+                    }
+                    
+                    // Carregar conteúdo do módulo
+                    loadModuleContent(module);
+                });
+            });
+        }
+
+        // Função para atualizar menus baseado no usuário
+        function updateMenusForUser() {
+            console.log('📋 Atualizando menus para usuário:', currentUser?.email);
+            console.log('🏢 Unidades disponíveis:', userUnits?.map(u => u.name));
+            
+            // Aqui você pode implementar lógica para:
+            // - Mostrar/ocultar menus específicos baseado nas unidades
+            // - Configurar permissões por unidade
+            // - Personalizar a experiência do usuário
+            
+            // Exemplo: Se o usuário não tem unidades, desabilitar alguns menus
+            const hasUnits = userUnits && userUnits.length > 0;
+            
+            // Habilitar/desabilitar menus que dependem de unidade
+            const unitDependentMenus = document.querySelectorAll('[data-requires-unit="true"]');
+            unitDependentMenus.forEach(menu => {
+                if (hasUnits) {
+                    menu.style.opacity = '1';
+                    menu.style.pointerEvents = 'auto';
+                } else {
+                    menu.style.opacity = '0.5';
+                    menu.style.pointerEvents = 'none';
+                }
+            });
+            
+            console.log('✅ Menus atualizados baseado no acesso do usuário');
+        }
+
+        // Event listeners do formulário de login
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('loginForm');
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+            const loginBtn = document.getElementById('loginBtn');
+
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // Limpar mensagens
+                errorMessage.style.display = 'none';
+                successMessage.style.display = 'none';
+                
+                // Obter dados do formulário
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value;
+
+                if (!email || !password) {
+                    errorMessage.textContent = 'Por favor, preencha todos os campos';
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+
+                // Mostrar loading
+                loginBtn.disabled = true;
+                loginBtn.innerHTML = '<span class="loading-spinner"></span>Entrando...';
+
+                try {
+                    const result = await performLogin(email, password);
+                    
+                    console.log('Resultado do login:', result);
+                    
+                    if (result.success) {
+                        successMessage.textContent = 'Login realizado com sucesso!';
+                        successMessage.style.display = 'block';
+                        
+                        // Fechar modal após sucesso
+                        setTimeout(() => {
+                            document.getElementById('loginOverlay').style.display = 'none';
+                            updateUserInterface();
+                        }, 1000);
+                        
+                    } else {
+                        errorMessage.textContent = result.error || 'Erro ao realizar login';
+                        errorMessage.style.display = 'block';
+                        console.error('Erro de login:', result.error);
+                    }
+                    
+                } catch (error) {
+                    console.error('Erro inesperado:', error);
+                    errorMessage.textContent = 'Erro inesperado. Tente novamente.';
+                    errorMessage.style.display = 'block';
+                } finally {
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = 'Entrar';
+                }
+            });
+
+            // Verificar autenticação ao carregar a página
+            checkAuth();
+        });
+
+        // Gerenciamento de tema
+        const themeToggle = document.getElementById('headerThemeToggle');
+        const body = document.body;
+        
+        // Carregar tema salvo
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            body.classList.toggle('dark', savedTheme === 'dark');
+            updateThemeIcon();
+        }
+
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark');
+            const theme = body.classList.contains('dark') ? 'dark' : 'light';
+            localStorage.setItem('theme', theme);
+            updateThemeIcon();
+            
+            // Notificar módulos sobre mudança de tema
+            notifyModulesThemeChange();
+        });
+
+        // Listener para botão de atualizar - Sistema completo
+        const refreshBtn = document.getElementById('refreshBtn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', async () => {
+                console.log('🔄 Iniciando atualização completa do sistema...');
+                
+                // Mostrar loading no botão
+                const originalIcon = refreshBtn.innerHTML;
+                refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                refreshBtn.disabled = true;
+                
+                try {
+                    // 1. Atualizar dados do usuário e módulos
+                    if (currentUser) {
+                        await loadUserData(currentUser.id);
+                        console.log('✅ Dados do usuário atualizados');
+                    }
+                    
+                    // 2. Recarregar módulo atual se houver
+                    const currentModule = document.querySelector('.nav-link.active, .submenu-link.active, [data-module].active')?.dataset.module;
+                    if (currentModule) {
+                        // Limpar cache do template
+                        templateCache.delete(currentModule);
+                        
+                        // Recarregar o módulo
+                        loadModuleContent(currentModule);
+                        console.log(`✅ Módulo "${currentModule}" recarregado`);
+                        
+                        // Se for dashboard, recarregar dados específicos
+                        if (currentModule === 'dashboard' && typeof loadDashboardData === 'function') {
+                            await loadDashboardData();
+                            console.log('✅ Dados do dashboard atualizados');
+                        }
+                    }
+                    
+                    // 3. Atualizar interface do usuário
+                    updateUserInterface();
+                    console.log('✅ Interface atualizada');
+                    
+                    console.log('🎉 Atualização completa do sistema concluída');
+                    
+                } catch (error) {
+                    console.error('❌ Erro durante atualização:', error);
+                } finally {
+                    // Restaurar botão
+                    refreshBtn.innerHTML = originalIcon;
+                    refreshBtn.disabled = false;
+                }
+            });
+        }
+
+        function updateThemeIcon() {
+            const icon = themeToggle.querySelector('i');
+            if (body.classList.contains('dark')) {
+                icon.className = 'fas fa-sun';
+            } else {
+                icon.className = 'fas fa-moon';
+            }
+        }
+
+        // Função para notificar módulos sobre mudança de tema
+        function notifyModulesThemeChange() {
+            const isDarkMode = body.classList.contains('dark');
+            
+            // Atualizar dados do módulo se disponível
+            if (window.moduleUserData) {
+                window.moduleUserData.isDarkMode = isDarkMode;
+            }
+            
+            // Notificar função de gestão do sistema se existir
+            if (typeof window.updateGestaoSistemaTheme === 'function') {
+                window.updateGestaoSistemaTheme(isDarkMode);
+            }
+            
+            console.log(`🎨 Tema alterado para: ${isDarkMode ? 'dark' : 'light'}`);
+        }
+
+        // Gerenciamento da sidebar
+        const sidebar = document.getElementById('sidebar');
+
+        // Função para toggle da sidebar
+        function toggleSidebar() {
+            // Verificar se está em mobile ou desktop
+            if (window.innerWidth <= 768) {
+                // Mobile: toggle mobile-open class
+                sidebar.classList.toggle('mobile-open');
+            } else {
+                // Desktop: toggle collapsed class
+                sidebar.classList.toggle('collapsed');
+            }
+        }
+
+        // Adicionar evento de clique em áreas vazias da sidebar
+        sidebar.addEventListener('click', (e) => {
+            // Verificar se o clique foi em uma área vazia (não em menus, links, botões)
+            const target = e.target;
+            
+            // Elementos que NÃO devem ativar o toggle
+            const interactiveSelectors = [
+                '.nav-link', '.submenu-link', '.user-info',
+                '.nav-icon', '.nav-text', '.nav-arrow',
+                '.user-avatar', '.user-name', '.user-role',
+                'button', 'a', 'input', 'select'
+            ];
+            
+            // Verificar se o clique foi em um elemento interativo ou seus filhos
+            let isInteractiveElement = false;
+            for (const selector of interactiveSelectors) {
+                if (target.matches(selector) || target.closest(selector)) {
+                    isInteractiveElement = true;
+                    break;
+                }
+            }
+            
+            // Áreas válidas para toggle (clique direto na sidebar-nav ou espaços vazios)
+            const isValidToggleArea = (
+                target === sidebar ||
+                target.matches('.sidebar-nav') ||
+                (target.matches('.nav-item') && !target.querySelector('.nav-link:hover'))
+            );
+            
+            // Se não foi em elemento interativo E foi em área válida
+            if (!isInteractiveElement && isValidToggleArea) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Adicionar feedback visual
+                const sidebarNav = sidebar.querySelector('.sidebar-nav');
+                sidebarNav.classList.add('click-active');
+                setTimeout(() => {
+                    sidebarNav.classList.remove('click-active');
+                }, 150);
+                
+                toggleSidebar();
+            }
+        });
+
+        // Fechar sidebar mobile ao clicar fora
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768) {
+                const isClickInsideSidebar = sidebar.contains(e.target);
+                
+                if (!isClickInsideSidebar && sidebar.classList.contains('mobile-open')) {
+                    sidebar.classList.remove('mobile-open');
+                }
+            }
+        });
+
+        // Gerenciar responsividade ao redimensionar janela
+        window.addEventListener('resize', () => {
+            if (window.innerWidth <= 768) {
+                // Em mobile, remover collapsed e usar mobile-open
+                sidebar.classList.remove('collapsed');
+                if (sidebar.classList.contains('mobile-open')) {
+                    // Manter aberto se já estava aberto
+                } else {
+                    // Fechar se não estava aberto
+                    sidebar.classList.remove('mobile-open');
+                }
+            } else {
+                // Em desktop, remover mobile-open e usar collapsed se necessário
+                sidebar.classList.remove('mobile-open');
+            }
+        });
+
+        // Gerenciamento dos menus
+        const navLinks = document.querySelectorAll('.nav-link[data-menu]');
+        const moduleLinks = document.querySelectorAll('[data-module]');
+        const pageTitle = document.getElementById('pageTitle');
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const menuId = link.dataset.menu;
+                const submenu = document.getElementById(`submenu-${menuId}`);
+                
+                if (submenu) {
+                    const isExpanded = link.classList.contains('expanded');
+                    
+                    // Fechar todos os outros submenus
+                    document.querySelectorAll('.nav-link').forEach(l => {
+                        l.classList.remove('expanded');
+                    });
+                    document.querySelectorAll('.submenu').forEach(s => {
+                        s.classList.remove('expanded');
+                    });
+                    
+                    // Toggle do submenu atual
+                    if (!isExpanded) {
+                        link.classList.add('expanded');
+                        submenu.classList.add('expanded');
+                    }
+                }
+            });
+        });
+
+        moduleLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const module = link.dataset.module;
+                
+                // Remover active de todos os links
+                document.querySelectorAll('.nav-link, .submenu-link').forEach(l => {
+                    l.classList.remove('active');
+                });
+                
+                // Adicionar active ao link clicado
+                link.classList.add('active');
+                
+                // Atualizar título da página
+                const moduleNames = {
+                    'dashboard': 'Dashboard',
+                    'unidade': 'Gestão de Unidades',
+                    'clientes': 'Gestão de Clientes',
+                    'agenda': 'Agenda',
+                    'pos-venda': 'Pós-Venda',
+                    'recrutamento': 'Recrutamento'
+                };
+                
+                pageTitle.textContent = moduleNames[module] || 'Dashboard';
+                
+                // Aqui você pode carregar o conteúdo do módulo via AJAX
+                loadModuleContent(module);
+            });
+        });
+
+        function loadModuleContent(module) {
+            // Verificar se usuário tem permissão para acessar o módulo
+            if (!canAccessModule(module)) {
+                console.warn(`⚠️ Usuário não tem permissão para acessar o módulo: ${module}`);
+                
+                const contentArea = document.getElementById('contentArea');
+                contentArea.innerHTML = `
+                    <div style="text-align: center; padding: 4rem 2rem;">
+                        <i class="fas fa-lock" style="font-size: 3rem; color: var(--danger-color); margin-bottom: 1rem;"></i>
+                        <h2 style="color: var(--text-primary); margin-bottom: 1rem;">Acesso Negado</h2>
+                        <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+                            Você não tem permissão para acessar este módulo.
+                        </p>
+                        <button onclick="loadModuleContent('dashboard')" 
+                                style="background: var(--accent-primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: var(--border-radius); cursor: pointer; font-weight: 500;"
+                                onmouseover="this.style.transform='translateY(-2px)'"
+                                onmouseout="this.style.transform='translateY(0)'">
+                            <i class="fas fa-home"></i> Voltar ao Dashboard
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            const contentArea = document.getElementById('contentArea');
+            
+            // Verificar se o template já está em cache
+            if (templateCache.has(module)) {
+                console.log(`📦 Carregando "${module}" do cache`);
+                contentArea.innerHTML = templateCache.get(module);
+                
+                // Enviar dados para módulo em cache
+                setTimeout(() => {
+                    sendModuleInitData(module);
+                }, 100);
+                
+                // Disparar evento de módulo carregado
+                const event = new CustomEvent('moduleLoaded', {
+                    detail: { 
+                        module: module,
+                        fromCache: true,
+                        timestamp: new Date().toISOString(),
+                        permissions: availableModules.find(m => m.name === module)?.permissions
+                    }
+                });
+                document.dispatchEvent(event);
+                return;
+            }
+            
+            // Mostrar loading
+            contentArea.innerHTML = `
+                <div style="text-align: center; padding: 4rem 2rem;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 3rem; color: var(--accent-primary); margin-bottom: 1rem;"></i>
+                    <p style="color: var(--text-secondary);">Carregando módulo...</p>
+                </div>
+            `;
+            
+            // Definir caminhos dos templates HTML externos
+            const templatePaths = {
+                'dashboard': 'modules/dashboard.html',
+                'unidade': 'modules/unidade.html',
+                'clientes': 'modules/clientes.html',
+                'agenda': 'modules/agenda.html',
+                'pos-venda': 'modules/pos-venda.html',
+                'recrutamento': 'modules/recrutamento.html',
+                'gestao-sistema': 'modules/gestao-sistema.html'
+            };
+            
+            const templatePath = templatePaths[module];
+            
+            if (!templatePath) {
+                contentArea.innerHTML = `
+                    <div style="text-align: center; padding: 4rem 2rem;">
+                        <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: var(--warning-color); margin-bottom: 1rem;"></i>
+                        <h2 style="color: var(--text-primary); margin-bottom: 1rem;">Módulo não encontrado</h2>
+                        <p style="color: var(--text-secondary);">O módulo "${module}" não foi encontrado.</p>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 1rem;">
+                            Módulos disponíveis: ${Object.keys(templatePaths).join(', ')}
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Carregar template via AJAX
+            fetch(templatePath)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    // Salvar no cache
+                    templateCache.set(module, html);
+                    
+                    // Inserir o HTML carregado
+                    contentArea.innerHTML = html;
+                    
+                    // Executar scripts inline do template carregado
+                    const scripts = contentArea.querySelectorAll('script');
+                    scripts.forEach(script => {
+                        const newScript = document.createElement('script');
+                        if (script.src) {
+                            newScript.src = script.src;
+                        } else {
+                            newScript.textContent = script.textContent;
+                        }
+                        newScript.onload = () => {
+                            console.log('Script carregado:', script.src || 'inline');
+                            
+                            // Enviar dados para módulos específicos após carregamento
+                            if (module === 'gestao-sistema') {
+                                setTimeout(() => {
+                                    sendModuleInitData(module);
+                                }, 500);
+                            }
+                        };
+                        document.head.appendChild(newScript);
+                        script.remove();
+                    });
+                    
+                    // Para módulos sem scripts externos, enviar dados imediatamente
+                    if (scripts.length === 0) {
+                        setTimeout(() => {
+                            sendModuleInitData(module);
+                        }, 100);
+                    }
+                    
+                    // Disparar evento personalizado para inicialização do módulo
+                    const event = new CustomEvent('moduleLoaded', {
+                        detail: { 
+                            module: module,
+                            templatePath: templatePath,
+                            fromCache: false,
+                            timestamp: new Date().toISOString()
+                        }
+                    });
+                    document.dispatchEvent(event);
+                    
+                    console.log(`✅ Módulo "${module}" carregado com sucesso`);
+                })
+                .catch(error => {
+                    console.error('❌ Erro ao carregar template:', error);
+                    contentArea.innerHTML = `
+                        <div style="text-align: center; padding: 4rem 2rem;">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--danger-color); margin-bottom: 1rem;"></i>
+                            <h2 style="color: var(--text-primary); margin-bottom: 1rem;">Erro ao carregar módulo</h2>
+                            <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                                Não foi possível carregar o template: <strong>${templatePath}</strong>
+                            </p>
+                            <p style="color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.9rem;">
+                                Erro: ${error.message}
+                            </p>
+                            <div style="display: flex; gap: 1rem; justify-content: center;">
+                                <button onclick="loadModuleContent('${module}')" 
+                                        style="background: var(--accent-primary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: var(--border-radius); cursor: pointer; font-weight: 500; transition: all var(--transition-fast);"
+                                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='var(--shadow-md)'"
+                                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                                    <i class="fas fa-redo"></i> Tentar novamente
+                                </button>
+                                <button onclick="loadModuleContent('dashboard')" 
+                                        style="background: var(--text-secondary); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: var(--border-radius); cursor: pointer; font-weight: 500; transition: all var(--transition-fast);"
+                                        onmouseover="this.style.background='var(--text-primary)'"
+                                        onmouseout="this.style.background='var(--text-secondary)'">
+                                    <i class="fas fa-home"></i> Voltar ao Dashboard
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+        }
+
+        // Função para enviar dados do usuário para módulos carregados
+        function sendModuleInitData(module) {
+            console.log(`📡 Enviando dados de inicialização para o módulo: ${module}`);
+            
+            // Para módulos específicos, enviar dados através de variáveis globais
+            if (module === 'gestao-sistema') {
+                // Verificar se é super_admin
+                if (!currentUser || !userRole || userRole.name !== 'super_admin') {
+                    console.warn('⚠️ Usuário não é super_admin - bloqueando acesso ao gestao-sistema');
+                    return;
+                }
+                
+                // Disponibilizar dados para o módulo gestao-sistema via window
+                window.moduleUserData = {
+                    currentUser: currentUser,
+                    userRole: userRole,
+                    userUnits: userUnits,
+                    supabase: supabase,
+                    isDarkMode: document.body.classList.contains('dark')
+                };
+                
+                // Tentar chamar função de inicialização específica se existir
+                setTimeout(() => {
+                    if (typeof window.GestaoSistema !== 'undefined' && typeof window.GestaoSistema.init === 'function') {
+                        console.log('🎯 Inicializando módulo Gestão do Sistema via GestaoSistema.init()');  
+                        window.GestaoSistema.init();
+                    } else {
+                        console.log('⚠️ Nenhuma função de inicialização encontrada para gestao-sistema');
+                        console.log('Available:', Object.keys(window).filter(key => key.includes('Gestao') || key.includes('gestao')));
+                    }
+                }, 200);
+            } else if (module === 'dashboard') {
+                // Disponibilizar dados para o dashboard
+                window.dashboardData = {
+                    currentUser: currentUser,
+                    userRole: userRole,
+                    userUnits: userUnits,
+                    supabase: supabase,
+                    selectedUnit: document.getElementById('unitSelect')?.value || null
+                };
+                
+                // Garantir que a função loadDashboardData esteja disponível e execute
+                setTimeout(() => {
+                    if (typeof loadDashboardData === 'function') {
+                        console.log('🎯 Carregando dados iniciais do dashboard');
+                        loadDashboardData();
+                    }
+                }, 300);
+            } else {
+                // Para outros módulos, usar o sistema padrão
+                const initFunctionName = `initialize${module.charAt(0).toUpperCase() + module.slice(1).replace('-', '')}`;
+                
+                if (typeof window[initFunctionName] === 'function') {
+                    console.log(`🎯 Chamando função de inicialização: ${initFunctionName}`);
+                    try {
+                        window[initFunctionName]();
+                    } catch (error) {
+                        console.error(`❌ Erro ao chamar ${initFunctionName}:`, error);
+                    }
+                }
+            }
+            
+            console.log(`✅ Dados enviados para módulo: ${module}`);
+        }
+
+        // Função de logout ATUALIZADA
+        function logout() {
+            if (confirm('Tem certeza que deseja sair?')) {
+                // Mostrar loading
+                const logoutBtn = document.getElementById('logoutBtn');
+                const originalHTML = logoutBtn.innerHTML;
+                logoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                logoutBtn.disabled = true;
+                
+                try {
+                    // Limpar dados do usuário
+                    currentUser = null;
+                    userUnits = [];
+                    
+                    // Limpar localStorage
+                    localStorage.removeItem('dromeflow_user');
+                    
+                    // Limpar cache de templates
+                    templateCache.clear();
+                    
+                    // Mostrar modal de login novamente
+                    document.getElementById('loginOverlay').style.display = 'flex';
+                    
+                    // Limpar formulário de login
+                    document.getElementById('loginForm').reset();
+                    document.getElementById('errorMessage').style.display = 'none';
+                    document.getElementById('successMessage').style.display = 'none';
+                    
+                    // Resetar interface
+                    document.getElementById('contentArea').innerHTML = `
+                        <div style="text-align: center; padding: 4rem 2rem;">
+                            <i class="fas fa-chart-pie" style="font-size: 4rem; color: var(--accent-primary); margin-bottom: 2rem;"></i>
+                            <h2 style="font-size: 2rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">
+                                Bem-vindo ao DromeFlow
+                            </h2>
+                            <p style="font-size: 1.1rem; color: var(--text-secondary); max-width: 600px; margin: 0 auto;">
+                                Faça login para acessar o sistema de gestão completo.
+                            </p>
+                        </div>
+                    `;
+                    
+                    // Remover active dos links
+                    document.querySelectorAll('.nav-link, .submenu-link').forEach(l => {
+                        l.classList.remove('active');
+                    });
+                    
+                    // Resetar título
+                    document.getElementById('pageTitle').textContent = 'DromeFlow';
+                    
+                    console.log('Logout realizado com sucesso');
+                    
+                } catch (error) {
+                    console.error('Erro no logout:', error);
+                } finally {
+                    // Restaurar botão
+                    logoutBtn.innerHTML = originalHTML;
+                    logoutBtn.disabled = false;
+                }
+            }
+        }
+
+        // Inicialização responsiva
+        function initializeResponsiveLayout() {
+            if (window.innerWidth <= 768) {
+                // Mobile: sidebar fechada por padrão
+                sidebar.classList.remove('collapsed');
+                sidebar.classList.remove('mobile-open');
+            } else {
+                // Desktop: manter estado normal
+                sidebar.classList.remove('mobile-open');
+            }
+        }
+
+        // Inicializar layout responsivo
+        initializeResponsiveLayout();
+
+        // Carregar dashboard por padrão APENAS se usuário estiver logado
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (currentUser) {
+                    loadModuleContent('dashboard');
+                }
+            }, 100);
+        });
+
+        // Função para limpar cache (útil para desenvolvimento)
+        function clearTemplateCache() {
+            templateCache.clear();
+            console.log('🗑️ Cache de templates limpo');
+        }
+
+        // Função para recarregar módulo forçadamente (ignora cache)
+        function reloadModule(module) {
+            templateCache.delete(module);
+            loadModuleContent(module);
+        }
+
+        // === Funções do Novo Header ===
+        
+        // Função para abrir modal de upload
+        // Função removida - usando abrirModalUpload() mais completa
+
+        // Função para resetar formulário de upload
+        function resetUploadForm() {
+            document.getElementById('fileInput').value = '';
+            document.getElementById('uploadProgress').classList.add('hidden');
+            document.getElementById('uploadArea').style.display = 'block';
+            document.getElementById('progressFill').style.width = '0%';
+        }
+
+        // Função para mostrar notificações
+        function showNotification(message, type = 'info') {
+            // Criar elemento de notificação se não existir
+            let notification = document.getElementById('notification');
+            if (!notification) {
+                notification = document.createElement('div');
+                notification.id = 'notification';
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    color: white;
+                    font-weight: 500;
+                    z-index: 9999;
+                    opacity: 0;
+                    transform: translateX(100%);
+                    transition: all 0.3s ease;
+                    max-width: 300px;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                `;
+                document.body.appendChild(notification);
+            }
+
+            // Definir cor baseada no tipo
+            const colors = {
+                success: '#10B981',
+                error: '#EF4444',
+                warning: '#F59E0B',
+                info: '#3B82F6'
+            };
+
+            notification.style.backgroundColor = colors[type] || colors.info;
+            notification.textContent = message;
+
+            // Mostrar notificação
+            setTimeout(() => {
+                notification.style.opacity = '1';
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+
+            // Ocultar após 3 segundos
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(100%)';
+            }, 3000);
+
+            console.log(`📢 Notificação [${type.toUpperCase()}]:`, message);
+        }
+
+        // Função para processar arquivo
+        function processFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showNotification('Por favor, selecione um arquivo.', 'error');
+                return;
+            }
+
+            if (!file.name.endsWith('.xlsx')) {
+                showNotification('Por favor, selecione apenas arquivos .xlsx', 'error');
+                return;
+            }
+
+            // Simular upload com progresso
+            const progressFill = document.getElementById('progressFill');
+            const uploadStatus = document.getElementById('uploadStatus');
+            
+            document.getElementById('uploadArea').style.display = 'none';
+            document.getElementById('uploadProgress').classList.remove('hidden');
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    uploadStatus.textContent = 'Upload concluído!';
+                    setTimeout(() => {
+                        showNotification('Arquivo enviado com sucesso!', 'success');
+                        closeUploadModal();
+                    }, 1000);
+                }
+                progressFill.style.width = progress + '%';
+                uploadStatus.textContent = `Enviando... ${Math.round(progress)}%`;
+            }, 200);
+        }
+
+        // Função de alternância de tema para o header
+        function headerToggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Atualizar ícone do botão de tema
+            updateThemeIcon();
+        }
+
+        // Função para atualizar ícone do tema
+        function updateThemeIcon() {
+            const themeBtn = document.getElementById('headerThemeToggle');
+            const currentTheme = document.body.getAttribute('data-theme');
+            
+            if (currentTheme === 'dark') {
+                themeBtn.innerHTML = '<i class="fas fa-sun"></i>';
+                themeBtn.title = 'Alternar para tema claro';
+            } else {
+                themeBtn.innerHTML = '<i class="fas fa-moon"></i>';
+                themeBtn.title = 'Alternar para tema escuro';
+            }
+        }
+
+        // Função para atualizar dados
+        function refreshData() {
+            console.log('🔄 Atualização de dados solicitada...');
+            
+            // Implementar lógica específica de atualização sem alertas
+            const currentModule = getCurrentModule();
+            if (currentModule) {
+                // Recarregar módulo atual
+                templateCache.delete(currentModule);
+                loadModuleContent(currentModule);
+                
+                // Se for dashboard, também atualizar dados
+                if (currentModule === 'dashboard' && typeof loadDashboardData === 'function') {
+                    loadDashboardData();
+                }
+                
+                console.log(`✅ Módulo "${currentModule}" atualizado silenciosamente`);
+            } else {
+                console.log('ℹ️ Nenhum módulo ativo para atualizar');
+            }
+        }
+
+        // Função para obter módulo atual
+        function getCurrentModule() {
+            const activeLink = document.querySelector('.sidebar-link.active, .submenu-link.active');
+            return activeLink ? activeLink.dataset.module : null;
+        }
+
+        // Função para obter unidade selecionada
+        function getSelectedUnit() {
+            const unitSelect = document.getElementById('unitSelect');
+            if (!unitSelect || !unitSelect.value) return null;
+            
+            const selectedUnit = userUnits.find(unit => unit.id === unitSelect.value);
+            return selectedUnit || null;
+        }
+
+        // === FUNÇÕES DE UPLOAD XLSX - Baseado no Dash Resultados ===
+        let uploadedData = null;
+
+        // Função para abrir modal de upload
+        function abrirModalUpload() {
+            console.log('🔄 Tentando abrir modal de upload...');
+            const modal = document.getElementById('uploadModal');
+            console.log('📂 Modal encontrado:', modal);
+            
+            if (modal) {
+                console.log('✅ Removendo classe hidden do modal');
+                modal.classList.remove('hidden');
+                modal.style.display = 'flex';
+                modal.style.visibility = 'visible';
+                modal.style.opacity = '1';
+                console.log('🎯 Classes do modal após abertura:', modal.className);
+                console.log('📋 Modal visível:', !modal.classList.contains('hidden'));
+                
+                // Reset do modal ao abrir
+                resetUploadModal();
+            } else {
+                console.error('❌ Modal uploadModal não encontrado no DOM');
+            }
+        }
+
+        // Função para fechar modal de upload
+        function closeUploadModal() {
+            const modal = document.getElementById('uploadModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.style.display = 'none';
+            }
+            // Reset completo do modal
+            resetUploadModal();
+        }
+
+        // Função para resetar modal de upload
+        function resetUploadModal() {
+            const xlsxInput = document.getElementById('xlsxInput');
+            const uploadPreview = document.getElementById('uploadPreview');
+            const uploadStatus = document.getElementById('uploadStatus');
+            const processFileBtn = document.getElementById('processFile');
+            const fileName = document.getElementById('fileName');
+            const fileInfo = document.getElementById('fileInfo');
+            
+            if (xlsxInput) xlsxInput.value = '';
+            if (uploadPreview) uploadPreview.classList.add('hidden');
+            if (uploadStatus) uploadStatus.classList.add('hidden');
+            if (processFileBtn) processFileBtn.disabled = true;
+            if (fileName) fileName.textContent = '';
+            if (fileInfo) fileInfo.textContent = '';
+        }
+
+        // Função para limpar seleção de arquivo
+        function clearFileSelection() {
+            console.log('🗑️ Limpando seleção de arquivo...');
+            resetUploadModal();
+        }
+
+        // Função para mostrar preview do arquivo
+        function showFilePreview(file) {
+            console.log('📄 Mostrando preview do arquivo:', file.name);
+            
+            const fileName = document.getElementById('fileName');
+            const fileInfo = document.getElementById('fileInfo');
+            const uploadPreview = document.getElementById('uploadPreview');
+            const processFileBtn = document.getElementById('processFile');
+            
+            if (fileName) fileName.textContent = file.name;
+            if (fileInfo) fileInfo.textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
+            if (uploadPreview) uploadPreview.classList.remove('hidden');
+            if (processFileBtn) processFileBtn.disabled = false;
+            
+            // Limpar status anterior
+            const uploadStatus = document.getElementById('uploadStatus');
+            if (uploadStatus) uploadStatus.classList.add('hidden');
+        }
+
+        // Função para mostrar status do upload
+        function showUploadStatus(message, type = 'info') {
+            console.log(`📢 Status [${type.toUpperCase()}]:`, message);
+            
+            const uploadStatus = document.getElementById('uploadStatus');
+            const statusMessage = document.getElementById('statusMessage');
+            
+            if (uploadStatus && statusMessage) {
+                statusMessage.textContent = message;
+                statusMessage.className = `status-message ${type}`;
+                uploadStatus.classList.remove('hidden');
+            }
+        }
+
+        // Handlers de drag and drop
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.currentTarget.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.currentTarget.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.currentTarget.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.name.toLowerCase().endsWith('.xlsx')) {
+                    document.getElementById('xlsxInput').files = files;
+                    showFilePreview(file);
+                } else {
+                    showUploadStatus('Por favor, solte apenas arquivos XLSX válidos.', 'error');
+                }
+            }
+        }
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.name.toLowerCase().endsWith('.xlsx')) {
+                    showFilePreview(file);
+                } else {
+                    showUploadStatus('Por favor, selecione apenas arquivos XLSX válidos.', 'error');
+                    e.target.value = '';
+                }
+            }
+        }
+
+        // Funções auxiliares de processamento
+        function parseValueFromCurrency(value) {
+            if (typeof value === 'number' && !isNaN(value)) return value;
+            if (typeof value !== 'string') return 0;
+            
+            const cleanValue = value
+                .replace(/[^\d,.-]/g, '')
+                .replace(/,/g, '.');
+            
+            const parsed = parseFloat(cleanValue);
+            return isNaN(parsed) ? 0 : parsed;
+        }
+
+        function parseDate(dateStr) {
+            if (!dateStr) return null;
+            
+            // Se já está no formato ISO (YYYY-MM-DD), usar Date
+            if (typeof dateStr === 'string' && dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                return new Date(dateStr + 'T00:00:00');
+            }
+            
+            // Se é uma string DD/MM/YYYY, converter
+            if (typeof dateStr === 'string' && dateStr.includes('/')) {
+                const [day, month, year] = dateStr.split('/');
+                return new Date(year, month - 1, day);
+            }
+            
+            // Tentar converter diretamente
+            const date = new Date(dateStr);
+            return isNaN(date.getTime()) ? null : date;
+        }
+
+        // Função para mostrar status de upload
+        function showUploadStatus(message, type = 'info') {
+            const uploadStatus = document.getElementById('uploadStatus');
+            const statusMessage = document.getElementById('statusMessage');
+            
+            if (uploadStatus && statusMessage) {
+                statusMessage.textContent = message;
+                statusMessage.className = `status-message ${type}`;
+                uploadStatus.classList.remove('hidden');
+            }
+        }
+
+        // Handlers de drag and drop
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].name.toLowerCase().endsWith('.xlsx')) {
+                document.getElementById('xlsxInput').files = files;
+                showFilePreview(files[0]);
+            } else {
+                showUploadStatus('Por favor, solte um arquivo XLSX válido.', 'error');
+            }
+        }
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file && file.name.toLowerCase().endsWith('.xlsx')) {
+                showFilePreview(file);
+            } else {
+                showUploadStatus('Por favor, selecione um arquivo XLSX válido.', 'error');
+            }
+        }
+
+        function showFilePreview(file) {
+            const fileName = document.getElementById('fileName');
+            const fileInfo = document.getElementById('fileInfo');
+            const uploadPreview = document.getElementById('uploadPreview');
+            const processFileBtn = document.getElementById('processFile');
+            
+            if (fileName) fileName.textContent = file.name;
+            if (fileInfo) fileInfo.textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
+            if (uploadPreview) uploadPreview.classList.remove('hidden');
+            if (processFileBtn) processFileBtn.disabled = false;
+        }
+
+        // Função principal de processamento do arquivo
+        async function processUploadedFile() {
+            const file = document.getElementById('xlsxInput').files[0];
+            if (!file) {
+                showUploadStatus('Nenhum arquivo selecionado para processar.', 'warning');
+                return;
+            }
+            
+            showUploadStatus('Processando arquivo...', 'info');
+            
+            try {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                        
+                        // A planilha tem headers na linha 2, e os dados começam na linha 3 (índice 2)
+                        const json = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+
+                        if (json.length <= 2) {
+                            showUploadStatus('Dados insuficientes no arquivo.', 'error');
+                            return;
+                        }
+
+                        const headers = json[1]; // A linha 2 da planilha (índice 1) contém os cabeçalhos
+                        const dataRows = json.slice(2); // Os dados começam na linha 3 (índice 2)
+                        
+                        console.log('Cabeçalhos da planilha:', headers);
+
+                        // Mapeamento de colunas da planilha para nomes do DB/código
+                        const colMapping = {
+                            'Número': headers.indexOf('Número'),
+                            'Data': headers.indexOf('Data'),
+                            'Horário': headers.indexOf('Horário'),
+                            'Período': headers.indexOf('Período'),
+                            'Serviço': headers.indexOf('Serviço'),
+                            'Tipo': headers.indexOf('Tipo'),
+                            'Cliente': headers.indexOf('Cliente'),
+                            'Profissionais': headers.indexOf('Profissionais'),
+                            'Repasse (R$)': headers.indexOf('Repasse (R$)'),
+                            'Local de Atendimento': headers.indexOf('Local de Atendimento'),
+                            'Valor (R$)': headers.indexOf('Valor (R$)'),
+                            'Cupom de Desconto': headers.indexOf('Cupom de Desconto'),
+                            'Origem': headers.indexOf('Origem'),
+                            'Data de cadastro': headers.indexOf('Data de cadastro'),
+                            'Dia da semana': headers.indexOf('Dia da semana')
+                        };
+                        
+                        // Verificar se alguma coluna obrigatória está faltando
+                        const colunasObrigatorias = ['Data', 'Cliente', 'Valor (R$)', 'Serviço'];
+                        const colunasFaltantes = colunasObrigatorias.filter(col => colMapping[col] === -1);
+                        if (colunasFaltantes.length > 0) {
+                            showUploadStatus(`Erro: Colunas obrigatórias não encontradas: ${colunasFaltantes.join(', ')}`, 'error');
+                            return;
+                        }
+
+                        let resultados = [];
+                        dataRows.forEach(row => {
+                            let base = {};
+                            // Preencher 'base' com os valores do XLSX usando os cabeçalhos
+                            base['DATA'] = (row[colMapping['Data']] || '').toString().trim();
+                            base['HORARIO'] = (row[colMapping['Horário']] || '').toString().trim();
+                            base['PERÍODO'] = (row[colMapping['Período']] || '').toString().trim();
+                            base['SERVIÇO'] = (row[colMapping['Serviço']] || '').toString().trim();
+                            base['TIPO'] = (row[colMapping['Tipo']] || '').toString().trim();
+                            base['CLIENTE'] = (row[colMapping['Cliente']] || '').toString().trim();
+                            // Remover barra vertical e espaços ao final do nome do cliente
+                            base['CLIENTE'] = base['CLIENTE'].replace(/\|/g, '').trim();
+                            base['PROFISSIONAL'] = (row[colMapping['Profissionais']] || '').toString().trim();
+                            
+                            // Valores numéricos - garante que são números válidos
+                            const repasse = parseValueFromCurrency(row[colMapping['Repasse (R$)']] || '0');
+                            const valor = parseValueFromCurrency(row[colMapping['Valor (R$)']] || '0');
+                            base['REPASSE'] = isNaN(repasse) ? 0 : repasse; 
+                            base['VALOR'] = isNaN(valor) ? 0 : valor;
+                            
+                            base['CUPOM'] = (row[colMapping['Cupom de Desconto']] || '').toString().trim();
+                            base['ORIGEM'] = (row[colMapping['Origem']] || '').toString().trim();
+                            base['ENDEREÇO'] = (row[colMapping['Local de Atendimento']] || '').toString().trim();
+                            base['CADASTRO'] = (row[colMapping['Data de cadastro']] || '').toString().trim();
+                            base['DIA'] = (row[colMapping['Dia da semana']] || '').toString().trim();
+                            base['NÚMERO'] = (row[colMapping['Número']] || '').toString().trim();
+
+                            // Conversão de formato de data para YYYY-MM-DD
+                            if (base['DATA'] && base['DATA'].includes('/')) {
+                                const [day, month, year] = base['DATA'].split('/');
+                                base['DATA'] = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                            }
+                            if (base['CADASTRO'] && base['CADASTRO'].includes('/')) {
+                                const [day, month, year] = base['CADASTRO'].split('/');
+                                base['CADASTRO'] = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                            }
+
+                            // Processar cliente e telefone
+                            let cliente = base['CLIENTE'] || '';
+                            let telefone = '';
+                            const telMatch = cliente.match(/\(?\d{2}\)? ?\d{4,5}-?\d{4}/);
+                            if (telMatch) {
+                                telefone = telMatch[0].replace(/\D/g, '');
+                                cliente = cliente.replace(telMatch[0], '').trim();
+                            }
+                            base['CLIENTE'] = cliente;
+                            base['whatscliente'] = telefone ? `55${telefone}` : '';
+
+                            // Handle multiple professionals and IS_DIVISAO
+                            let profissionais = (base['PROFISSIONAL'] || '').split(';').map(p => p.trim()).filter(Boolean);
+                            if (profissionais.length === 0) profissionais = ['SEM PROFISSIONAL'];
+
+                            const atendimentoId = base['NÚMERO'] || `${base['DATA']}_${base['CLIENTE']}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                            const repasseDividido = profissionais.length > 1 ? (base['REPASSE'] / profissionais.length) : base['REPASSE'];
+
+                            profissionais.forEach((prof, index) => {
+                                let newEntry = {
+                                    ...base,
+                                    PROFISSIONAL: prof,
+                                    ATENDIMENTO_ID: atendimentoId,
+                                    IS_DIVISAO: profissionais.length > 1 ? (index > 0 ? 'SIM' : 'NAO') : 'NAO',
+                                    REPASSE: repasseDividido
+                                };
+                                resultados.push(newEntry);
+                            });
+                        });
+
+                        if (resultados.length === 0) {
+                            showUploadStatus('Nenhum dado válido encontrado para upload.', 'error');
+                            return;
+                        }
+
+                        console.log(`${resultados.length} registros processados. Amostra:`, resultados.slice(0, 3));
+                        showUploadStatus(`${resultados.length} registros processados.`, 'success');
+                        
+                        // Simular upload para database
+                        await uploadToDatabase(resultados);
+
+                    } catch (err) {
+                        console.error('Error processing XLSX data:', err);
+                        showUploadStatus('Erro ao processar arquivo: ' + err.message, 'error');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+                
+            } catch (error) {
+                console.error('Error in processUploadedFile:', error);
+                showUploadStatus('Erro no upload: ' + error.message, 'error');
+            }
+        }
+
+        // Função para fazer upload para o banco de dados
+        async function uploadToDatabase(records) {
+            showUploadStatus('Salvando no banco de dados...', 'info');
+            
+            try {
+                // Verificar se usuário está logado e tem unidade selecionada
+                if (!currentUser || !currentUser.id) {
+                    throw new Error('Usuário não está logado');
+                }
+
+                const selectedUnit = getSelectedUnit();
+                if (!selectedUnit || !selectedUnit.id) {
+                    throw new Error('Nenhuma unidade selecionada. Por favor, selecione uma unidade antes de fazer o upload.');
+                }
+
+                console.log('📤 Iniciando upload para banco:', {
+                    user_id: currentUser.id,
+                    unit_id: selectedUnit.id,
+                    records_count: records.length
+                });
+
+                // Mapear os dados para a estrutura da tabela resultados
+                const mappedRecords = records.map(record => {
+                    // Converter datas para formato ISO se necessário
+                    let dataFormatted = null;
+                    if (record.DATA) {
+                        if (record.DATA.includes('-')) {
+                            dataFormatted = record.DATA; // Já está no formato correto
+                        } else if (record.DATA.includes('/')) {
+                            const [day, month, year] = record.DATA.split('/');
+                            dataFormatted = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                        }
+                    }
+
+                    let cadastroFormatted = null;
+                    if (record.CADASTRO) {
+                        if (record.CADASTRO.includes('-')) {
+                            cadastroFormatted = record.CADASTRO;
+                        } else if (record.CADASTRO.includes('/')) {
+                            const [day, month, year] = record.CADASTRO.split('/');
+                            cadastroFormatted = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                        }
+                    }
+
+                    return {
+                        // Campos mapeados da planilha (usar os nomes da estrutura do banco)
+                        data: dataFormatted,
+                        horario: record.HORARIO || null,
+                        valor: record.VALOR || 0,
+                        servico: record.SERVIÇO || null,
+                        tipo: record.TIPO || null,
+                        periodo: record.PERÍODO || null,
+                        cliente: record.CLIENTE || null,
+                        profissional: record.PROFISSIONAL || null,
+                        endereco: record.ENDEREÇO || null,
+                        dia: record.DIA || null,
+                        repasse: record.REPASSE || 0,
+                        whatscliente: record.whatscliente || null,
+                        cupom: record.CUPOM || null,
+                        origem: record.ORIGEM || null,
+                        atendimento_id: record.ATENDIMENTO_ID || null,
+                        is_divisao: record.IS_DIVISAO || 'NAO',
+                        cadastro: cadastroFormatted,
+                        
+                        // Campos obrigatórios do sistema
+                        user_id: currentUser.id,
+                        unit_id: selectedUnit.id,
+                        
+                        // Campos opcionais (podem ser preenchidos posteriormente)
+                        acao: null,
+                        horas: null,
+                        motivo: null,
+                        acomp: null,
+                        status: 'ATIVO', // Status padrão
+                        pos: null,
+                        observacao: null
+                    };
+                });
+
+                console.log('📋 Amostra de dados mapeados:', mappedRecords.slice(0, 2));
+
+                // Deletar registros do mesmo mês/ano antes de inserir (se houver dados com data)
+                if (mappedRecords.length > 0 && mappedRecords[0].data) {
+                    const dataStr = mappedRecords[0].data;
+                    const [ano, mes] = dataStr.split('-');
+                    
+                    if (ano && mes) {
+                        showUploadStatus('Removendo dados anteriores do mesmo período...', 'info');
+                        
+                        try {
+                            const { data: deletedData, error: deleteError } = await supabase
+                                .from('resultados')
+                                .delete()
+                                .eq('unit_id', selectedUnit.id)
+                                .gte('data', `${ano}-${mes}-01`)
+                                .lte('data', `${ano}-${mes}-31`);
+                            
+                            console.log('🗑️ Registros anteriores removidos');
+                        } catch (deleteErr) {
+                            console.warn('⚠️ Aviso ao deletar registros anteriores:', deleteErr);
+                        }
+                    }
+                }
+
+                // Inserir novos registros
+                showUploadStatus('Inserindo novos registros...', 'info');
+                
+                const { data: insertedData, error: insertError } = await supabase
+                    .from('resultados')
+                    .insert(mappedRecords);
+
+                if (insertError) {
+                    console.error('❌ Erro no Supabase insert:', insertError);
+                    throw new Error(`Erro ao salvar dados: ${insertError.message}`);
+                }
+                
+                console.log('✅ Registros inseridos com sucesso:', insertedData);
+
+                showUploadStatus('Upload concluído com sucesso!', 'success');
+                showNotification(`${records.length} registros salvos com sucesso na unidade ${selectedUnit.name}!`, 'success');
+                
+                // Recarregar dados do dashboard se estiver ativo
+                setTimeout(() => {
+                    const currentModule = getCurrentModule();
+                    if (currentModule === 'dashboard' && typeof window.dashboardModule !== 'undefined' && window.dashboardModule.loadDashboardData) {
+                        window.dashboardModule.loadDashboardData();
+                    }
+                    closeUploadModal();
+                }, 2000);
+                
+            } catch (error) {
+                console.error('❌ Erro no upload para banco de dados:', error);
+                showUploadStatus(`Erro: ${error.message}`, 'error');
+                showNotification(`Falha ao salvar: ${error.message}`, 'error');
+            }
+        }
+
+        // Função para mostrar status do upload
+        function showUploadStatus(message, type) {
+            const statusDiv = document.getElementById('uploadStatus');
+            if (!statusDiv) return;
+            
+            statusDiv.className = `mt-4 p-3 rounded-lg ${
+                type === 'error' ? 'bg-danger-color text-on-accent' :
+                type === 'success' ? 'bg-success-color text-on-accent' :
+                'bg-info-color text-on-accent'
+            }`;
+            statusDiv.textContent = message;
+            statusDiv.classList.remove('hidden');
+        }
+
+        // Função para obter filtros ativos
+        function getActiveFilters() {
+            const unitSelect = document.getElementById('unitSelect');
+            const monthFilter = document.getElementById('monthFilter');
+            const yearFilter = document.getElementById('yearFilter');
+            
+            return {
+                unitId: unitSelect?.value || null,
+                unitName: getSelectedUnit()?.name || null,
+                month: monthFilter?.value || null,
+                year: yearFilter?.value || null,
+                monthName: monthFilter?.selectedOptions[0]?.textContent || null
+            };
+        }
+
+        // Função para notificar mudança de filtros
+        function notifyFilterChange() {
+            const filters = getActiveFilters();
+            console.log('🔍 Filtros alterados:', filters);
+            
+            // Disparar evento personalizado para que os módulos possam reagir
+            const event = new CustomEvent('filtersChanged', {
+                detail: filters
+            });
+            document.dispatchEvent(event);
+            
+            // Recarregar módulo atual se necessário
+            const currentModule = getCurrentModule();
+            if (currentModule && filters.unitId) {
+                console.log(`🔄 Aplicando filtros ao módulo: ${currentModule}`);
+                // Você pode implementar lógica específica aqui
+            }
+        }
+
+        // Event Listeners para o novo header
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 DOM carregado - Configurando modal de upload...');
+            
+            // Testar se o modal existe
+            const uploadModal = document.getElementById('uploadModal');
+            console.log('📂 Modal de upload encontrado:', uploadModal ? 'SIM' : 'NÃO');
+            
+            // Testar biblioteca XLSX
+            console.log('📚 Biblioteca XLSX disponível:', typeof XLSX !== 'undefined' ? 'SIM' : 'NÃO');
+            
+            // Upload XLSX modal events
+            const dropZone = document.getElementById('dropZone');
+            const xlsxInput = document.getElementById('xlsxInput');
+
+            if (dropZone) {
+                dropZone.addEventListener('dragover', handleDragOver);
+                dropZone.addEventListener('dragleave', handleDragLeave);
+                dropZone.addEventListener('drop', handleDrop);
+            }
+
+            if (xlsxInput) {
+                xlsxInput.addEventListener('change', handleFileSelect);
+            }
+
+            // Fechar modal ao clicar no backdrop e configurar Escape
+            if (uploadModal) {
+                uploadModal.addEventListener('click', (e) => {
+                    if (e.target === uploadModal) {
+                        closeUploadModal();
+                    }
+                });
+            }
+
+            // Fechar modal com tecla Escape
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    if (uploadModal && !uploadModal.classList.contains('hidden')) {
+                        closeUploadModal();
+                    }
+                }
+            });
+
+            // Header button events
+            const headerThemeToggle = document.getElementById('headerThemeToggle');
+            const unitSelect = document.getElementById('unitSelect');
+            const monthFilter = document.getElementById('monthFilter');
+            const yearFilter = document.getElementById('yearFilter');
+
+            // Refresh button já configurado anteriormente no código principal
+            
+            if (headerThemeToggle) {
+                headerThemeToggle.addEventListener('click', headerToggleTheme);
+            }
+
+            // Filter change events
+            if (unitSelect) {
+                unitSelect.addEventListener('change', (e) => {
+                    const selectedUnit = getSelectedUnit();
+                    console.log('🏢 Unidade selecionada:', selectedUnit);
+                    
+                    if (selectedUnit) {
+                        // Salvar última unidade selecionada
+                        localStorage.setItem('lastSelectedUnit', selectedUnit.id);
+                        console.log('💾 Unidade salva no localStorage:', selectedUnit.name);
+                    }
+                    
+                    // Notificar mudança de filtros
+                    notifyFilterChange();
+                });
+            }
+
+            if (monthFilter) {
+                monthFilter.addEventListener('change', (e) => {
+                    const monthName = e.target.selectedOptions[0]?.textContent || 'Todos';
+                    console.log('📅 Mês selecionado:', monthName, '(valor:', e.target.value, ')');
+                    notifyFilterChange();
+                });
+            }
+
+            if (yearFilter) {
+                yearFilter.addEventListener('change', (e) => {
+                    console.log('📅 Ano selecionado:', e.target.value || 'Todos');
+                    notifyFilterChange();
+                });
+            }
+
+            // Inicializar tema
+            updateThemeIcon();
+            
+            // Inicializar filtros com mês e ano atual
+            const currentDate = new Date();
+            const currentMonth = currentDate.getMonth() + 1; // getMonth() retorna 0-11
+            const currentYear = currentDate.getFullYear();
+            
+            if (monthFilter) {
+                monthFilter.value = currentMonth.toString();
+            }
+            
+            if (yearFilter) {
+                yearFilter.value = currentYear.toString();
+            }
+            
+            // Verificar se há sessão ativa e popular unidades
+            const savedUser = localStorage.getItem('dromeflow_user');
+            if (savedUser) {
+                populateUnitSelect();
+            }
+
+            // Listener global para mudanças de filtros
+            document.addEventListener('filtersChanged', (e) => {
+                const filters = e.detail;
+                console.log('🎯 Sistema notificado sobre mudança de filtros:', filters);
+                
+                // Aqui você pode implementar lógica global que deve reagir a mudanças de filtros
+                // Por exemplo: atualizar dashboards, recarregar dados, etc.
+            });
+        });
+
+        // Função para conceder/remover acesso de módulo para usuário (apenas admins)
+        async function toggleUserModuleAccess(userId, unitId, moduleId, grant = true) {
+            try {
+                if (userRole?.name !== 'admin' && userRole?.name !== 'super_admin') {
+                    throw new Error('Sem permissão para alterar acessos');
+                }
+
+                if (grant) {
+                    // Conceder acesso
+                    const { error } = await supabase
+                        .from('user_module_permissions')
+                        .insert({
+                            user_id: userId,
+                            unit_id: unitId,
+                            module_id: moduleId,
+                            granted_by: currentUser.id
+                        });
+
+                    if (error && error.code !== '23505') { // Ignora erro de duplicata
+                        throw error;
+                    }
+
+                    console.log('✅ Acesso concedido ao módulo');
+                } else {
+                    // Remover acesso
+                    const { error } = await supabase
+                        .from('user_module_permissions')
+                        .delete()
+                        .eq('user_id', userId)
+                        .eq('unit_id', unitId)
+                        .eq('module_id', moduleId);
+
+                    if (error) throw error;
+
+                    console.log('❌ Acesso removido do módulo');
+                }
+
+                return { success: true };
+                
+            } catch (error) {
+                console.error('Erro ao alterar acesso:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Função para ativar/desativar módulo na unidade (apenas super admin)
+        async function toggleUnitModule(unitId, moduleId, enable = true) {
+            try {
+                if (userRole?.name !== 'super_admin') {
+                    throw new Error('Apenas Super Admin pode alterar módulos de unidades');
+                }
+
+                if (enable) {
+                    // Ativar módulo na unidade
+                    const { error } = await supabase
+                        .from('unit_modules')
+                        .insert({
+                            unit_id: unitId,
+                            module_id: moduleId,
+                            enabled_by: currentUser.id
+                        });
+
+                    if (error && error.code !== '23505') { // Ignora erro de duplicata
+                        throw error;
+                    }
+
+                    console.log('✅ Módulo ativado na unidade');
+                } else {
+                    // Desativar módulo na unidade
+                    const { error } = await supabase
+                        .from('unit_modules')
+                        .delete()
+                        .eq('unit_id', unitId)
+                        .eq('module_id', moduleId);
+
+                    if (error) throw error;
+
+                    // Remover todas as permissões de usuários para este módulo nesta unidade
+                    await supabase
+                        .from('user_module_permissions')
+                        .delete()
+                        .eq('unit_id', unitId)
+                        .eq('module_id', moduleId);
+
+                    console.log('❌ Módulo desativado na unidade');
+                }
+
+                return { success: true };
+                
+            } catch (error) {
+                console.error('Erro ao alterar módulo da unidade:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Adicionar função ao escopo global para debug e gestão
+        window.DromeFlow = {
+            clearCache: clearTemplateCache,
+            reloadModule: reloadModule,
+            getCache: () => Array.from(templateCache.keys()),
+            version: '2.0.0',
+            // Novas funções para debug de permissões
+            getUserPermissions: () => availableModules,
+            getAvailableModules: () => availableModules,
+            getUserRole: () => userRole,
+            getCurrentUser: () => currentUser,
+            hasPermission: hasPermission,
+            canAccessModule: canAccessModule,
+            // Funções para gestão (apenas admins)
+            toggleUserModuleAccess: toggleUserModuleAccess,
+            toggleUnitModule: toggleUnitModule,
+            // Debug functions
+            debug: {
+                showUserInfo: () => {
+                    console.log('=== INFORMAÇÕES DO USUÁRIO ===');
+                    console.log('Usuário:', currentUser);
+                    console.log('Papel:', userRole);
+                    console.log('Unidades:', userUnits);
+                    console.log('Módulos disponíveis:', availableModules.length);
+                    console.log('Lista de módulos:', availableModules.map(m => `${m.name} (${m.display_name})`));
+                },
+                testPermission: (moduleName) => {
+                    const result = canAccessModule(moduleName);
+                    console.log(`Pode acessar "${moduleName}":`, result);
+                    return result;
+                }
+            }
+        };
+    </script>
+
+</body>
+</html>

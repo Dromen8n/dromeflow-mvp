@@ -1,0 +1,97 @@
+<!-- Template Base para Módulos DromeFlow -->
+<!-- Este arquivo serve como referência para criar novos módulos -->
+
+<div class="module-container">
+    <div class="module-header">
+        <div class="module-title-section">
+            <h1 class="module-title">
+                <i class="fas fa-icon-placeholder"></i>
+                Nome do Módulo
+            </h1>
+            <p class="module-description">Descrição do módulo aqui</p>
+        </div>
+        
+        <div class="module-actions">
+            <!-- Botões de ação do módulo -->
+            <button class="btn btn-primary">
+                <i class="fas fa-plus"></i>
+                Adicionar
+            </button>
+        </div>
+    </div>
+
+    <div class="module-content">
+        <!-- Conteúdo principal do módulo -->
+        <div class="content-section">
+            <!-- Cards, tabelas, formulários, etc. -->
+        </div>
+    </div>
+</div>
+
+<style>
+/* Estilos específicos do módulo (se necessário) */
+.module-container {
+    padding: var(--spacing-lg);
+    background: var(--bg-secondary);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.module-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--border-primary);
+}
+
+.module-title {
+    color: var(--text-primary);
+    font-size: 1.875rem;
+    font-weight: 700;
+    margin-bottom: var(--spacing-xs);
+}
+
+.module-description {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin: 0;
+}
+
+.module-content {
+    min-height: 400px;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .module-header {
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+    
+    .module-container {
+        padding: var(--spacing-md);
+    }
+}
+</style>
+
+<script>
+// Script específico do módulo
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Módulo carregado e inicializado');
+    
+    // Inicializações específicas do módulo aqui
+    initializeModule();
+});
+
+function initializeModule() {
+    // Lógica de inicialização
+    console.log('Inicializando módulo...');
+    
+    // Eventos, carregamento de dados, etc.
+}
+
+// Funções específicas do módulo
+// ...
+</script>
